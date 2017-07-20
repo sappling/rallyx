@@ -1,0 +1,27 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+//java version:
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+mainClassName = 'com.controlj.cjlicensing.Main'
+
+dependencies {
+	// todo - need to get files in artifactory - some may already be there
+    compile fileTree (dir:"lib", include:'*.*')
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    compile group:'com.intellij', name:'annotations', version:'7.0.3'
+
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5'
+    compile group: 'com.rallydev.rest', name: 'rally-rest-api', version: '2.2.1'
+
+}
+
+

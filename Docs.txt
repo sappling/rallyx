@@ -1,0 +1,8 @@
+Rally Web Services - https://rally1.rallydev.com/slm/doc/webservice
+
+Rally Rest
+    Github space - https://github.com/RallyTools/RallyRestToolkitForJava
+    Javadoc - http://rallytools.github.io/RallyRestToolkitForJava/
+
+Using XMind
+    https://github.com/xmindltd/xmind/wiki/UsingXmindAPI
