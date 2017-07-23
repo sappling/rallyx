@@ -1,0 +1,7 @@
+build/**
+out/**
+/*.xmind
+*.iml
+*.ipr
+*.iws
+.gradle/**

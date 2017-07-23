@@ -2,20 +2,21 @@ package org.appling.rallyx;
 
 import com.google.gson.*;
 import com.rallydev.rest.RallyRestApi;
-import com.rallydev.rest.request.QueryRequest;
-import com.rallydev.rest.response.QueryResponse;
-import com.rallydev.rest.util.Fetch;
-import com.rallydev.rest.util.QueryFilter;
 import org.apache.commons.cli.*;
-import org.appling.rallyx.rally.RallyQueryFactory;
+import org.appling.rallyx.rally.InitiativeNodeFinder;
+import org.appling.rallyx.rally.RallyNode;
+import org.appling.rallyx.rally.RallyNodeWalker;
+import org.appling.rallyx.rally.UserStoryFinder;
 import org.xmind.core.CoreException;
-import org.xmind.core.ITopic;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by sappling on 9/5/2016.
@@ -57,9 +58,6 @@ public class Main {
             useProxy = false;
         }
 
-        if (line.hasOption(OPTION_RELEASE)) {
-            String release = line.getOptionValue(OPTION_RELEASE);
-        }
 
         String rally_key = System.getenv("RALLY_KEY");
         if (rally_key == null) {
@@ -68,15 +66,16 @@ public class Main {
         }
 
         String initiativeID = null;
-        if (line.hasOption(OPTION_INIT)) {
-            initiativeID = line.getOptionValue(OPTION_INIT);
-        }
 
         String outName = null;
         String[] remainingargs = line.getArgs();
         if (remainingargs.length > 0) {
             outName = remainingargs[0];
         }
+
+        List<RallyNode> storiesInReleaseList = null;
+        RallyNode initiative = null;
+        List<RallyNode> storiesUnderInitiativeList = null;
 
         XMindWriter hwriter = null;
         try {
@@ -87,48 +86,76 @@ public class Main {
 
             if (line.hasOption(OPTION_RELEASE)) {
                 String releaseName = line.getOptionValue(OPTION_RELEASE);
-                QueryResponse response = restApi.query(RallyQueryFactory.findStoriesInRelease(releaseName));
-                if (response.wasSuccessful()) {
-                    JsonArray results = response.getResults();
-                    for (JsonElement result : results) {
-                        JsonObject obj = result.getAsJsonObject();
-                        String id = obj.get("ObjectID").getAsString();
+                UserStoryFinder finder = new UserStoryFinder(restApi);
+                finder.setRelease(releaseName);
+
+                storiesInReleaseList = finder.getStories();
+            }
+
+            if (line.hasOption(OPTION_INIT)) {
+                initiativeID = line.getOptionValue(OPTION_INIT);
+                InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
+                initiative = walker.getInitiativeTree(initiativeID);
+                storiesUnderInitiativeList = walker.getStories();
+            }
+
+            Set<RallyNode> storiesInReleaseSet = new HashSet<>();
+            Set<RallyNode> storiesUnderInitiativeSet = new HashSet<>();
+            Set<RallyNode> storiesNotInInitiative = new HashSet<>();
+            Set<RallyNode> storiesNotInRelease = new HashSet<>();
+            Set<RallyNode> storiesInNoRelease = new HashSet<>();
+            Set<RallyNode> allStories = new HashSet<>();
+
+            if (storiesInReleaseList != null) {
+                storiesInReleaseSet = new HashSet<>(storiesInReleaseList);
+            }
+            if (storiesUnderInitiativeList != null) {
+                storiesUnderInitiativeSet = new HashSet<>(storiesUnderInitiativeList);
+            }
+
+            // find all stories in the release that are not in the initiative
+            storiesNotInInitiative = new HashSet<>(storiesInReleaseSet);
+            storiesNotInInitiative.removeAll(storiesUnderInitiativeSet);
+
+            // find all stories in the initiative that are not in the release
+            storiesNotInRelease = new HashSet<>(storiesUnderInitiativeSet);
+            storiesNotInRelease.removeAll(storiesInReleaseSet);
+            storiesNotInRelease = removeParents(storiesNotInRelease);
+
+            // find stories in no release
+            storiesInNoRelease = storiesNotInRelease.stream()
+                .filter(s -> s.getRelease().isEmpty())
+                .collect(Collectors.toSet());
+
+            // all stories
+            allStories = new HashSet<>(storiesUnderInitiativeSet);
+            allStories.addAll(storiesNotInInitiative);
+
+            //statistics
+            System.out.format("%d stories total\n", allStories.size());
+            System.out.format("%d stories not in initiative\n", storiesNotInInitiative.size());
+            System.out.format("%d stories not in specified release\n", storiesNotInRelease.size());
+            System.out.format("%d stories in no release\n", storiesInNoRelease.size());
+
+            storiesInNoRelease.forEach(System.out::println);
+
+            if (outName != null && initiative != null ) {
+                XMindWriter writer = new XMindWriter(outName, storiesInReleaseSet);
+                RallyNodeWalker walker = new RallyNodeWalker(writer);
+                walker.walk(initiative, null, 1);
+                writer.addOrphans(storiesNotInInitiative);
+                try {
+                    writer.close();
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+
                         /*
-                        System.out.format("%s - %s\n",
-                                id,
-                                obj.get("Name").getAsString());
-                        */
-                        releaseStories.put(id, obj);
-                    }
 
-                }
-            }
-
-            if (outName != null && initiativeID!=null) {
-                QueryResponse queryResponse = restApi.query(RallyQueryFactory.findInitiative(initiativeID));
-
-                if (queryResponse.wasSuccessful()) {
-                    JsonArray resultArray = queryResponse.getResults();
-                    JsonElement jsonInitiative = resultArray.get(0);
-
-                    hwriter = new XMindWriter(outName);
-                    RallySortedTreeWalker walker = new RallySortedTreeWalker(restApi, releaseStories);
-
-                    walker.walk(jsonInitiative.getAsJsonObject(), null, hwriter, 1);
-                } else {
-                    System.out.println("Error:");
-                    String[] errors = queryResponse.getErrors();
-                    for (String error : errors) {
-                        System.out.println(error);
-                    }
-                }
-            }
-
-            System.out.format("Found %d user stores not under the iteration %s:\n", releaseStories.size(), initiativeID);
             if (hwriter != null) {
                 hwriter.addOrphans(releaseStories.values());
             }
-            /*
             for (JsonObject object : releaseStories.values()) {
                 String formattedID = object.get("FormattedID").getAsString();
                 String name = object.get("Name").getAsString();
@@ -150,6 +177,16 @@ public class Main {
                 }
             }
         }
+    }
+
+    private static Set<RallyNode> removeParents(Set<RallyNode> set) {
+        HashSet<RallyNode> results = new HashSet<>();
+        for (RallyNode rallyNode : set) {
+            if (!rallyNode.hasChildren()) {
+                results.add(rallyNode);
+            }
+        }
+        return results;
     }
 
     static String prettyPrintJSON(JsonElement element) {
