@@ -3,20 +3,15 @@ package org.appling.rallyx;
 import com.google.gson.*;
 import com.rallydev.rest.RallyRestApi;
 import org.apache.commons.cli.*;
-import org.appling.rallyx.rally.InitiativeNodeFinder;
-import org.appling.rallyx.rally.RallyNode;
-import org.appling.rallyx.rally.RallyNodeWalker;
-import org.appling.rallyx.rally.UserStoryFinder;
+import org.appling.rallyx.rally.*;
+import org.appling.rallyx.xmind.XMindWriter;
 import org.xmind.core.CoreException;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by sappling on 9/5/2016.
@@ -25,7 +20,7 @@ public class Main {
     private static final String OPTION_NOPROXY = "noproxy";
     private static final String OPTION_INIT = "i";
     private static final String OPTION_RELEASE = "r";
-    private static final String OPTION_OUTFILE = "outfile";
+    private static final String OPTION_TYPE = "type";
     private static final String OPTION_HELP = "help";
 
     private static Options options = setupOptions();
@@ -35,6 +30,7 @@ public class Main {
         CommandLineParser parser = new DefaultParser();
         boolean useProxy = true;
         CommandLine line = null;
+        String outType = null;
         HashMap<String, JsonObject> releaseStories = new HashMap<>();
 
 
@@ -57,6 +53,9 @@ public class Main {
         if (line.hasOption(OPTION_NOPROXY)) {
             useProxy = false;
         }
+        if (line.hasOption(OPTION_TYPE)) {
+            outType = line.getOptionValue(OPTION_TYPE);
+        }
 
 
         String rally_key = System.getenv("RALLY_KEY");
@@ -77,7 +76,6 @@ public class Main {
         RallyNode initiative = null;
         List<RallyNode> storiesUnderInitiativeList = null;
 
-        XMindWriter hwriter = null;
         try {
             RallyRestApi restApi = new RallyRestApi(new URI("https://rally1.rallydev.com"), rally_key);
             if (useProxy) {
@@ -99,94 +97,25 @@ public class Main {
                 storiesUnderInitiativeList = walker.getStories();
             }
 
-            Set<RallyNode> storiesInReleaseSet = new HashSet<>();
-            Set<RallyNode> storiesUnderInitiativeSet = new HashSet<>();
-            Set<RallyNode> storiesNotInInitiative = new HashSet<>();
-            Set<RallyNode> storiesNotInRelease = new HashSet<>();
-            Set<RallyNode> storiesInNoRelease = new HashSet<>();
-            Set<RallyNode> allStories = new HashSet<>();
+            // statistics
+            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList);
+            stats.printStats();
 
-            if (storiesInReleaseList != null) {
-                storiesInReleaseSet = new HashSet<>(storiesInReleaseList);
-            }
-            if (storiesUnderInitiativeList != null) {
-                storiesUnderInitiativeSet = new HashSet<>(storiesUnderInitiativeList);
-            }
-
-            // find all stories in the release that are not in the initiative
-            storiesNotInInitiative = new HashSet<>(storiesInReleaseSet);
-            storiesNotInInitiative.removeAll(storiesUnderInitiativeSet);
-
-            // find all stories in the initiative that are not in the release
-            storiesNotInRelease = new HashSet<>(storiesUnderInitiativeSet);
-            storiesNotInRelease.removeAll(storiesInReleaseSet);
-            storiesNotInRelease = removeParents(storiesNotInRelease);
-
-            // find stories in no release
-            storiesInNoRelease = storiesNotInRelease.stream()
-                .filter(s -> s.getRelease().isEmpty())
-                .collect(Collectors.toSet());
-
-            // all stories
-            allStories = new HashSet<>(storiesUnderInitiativeSet);
-            allStories.addAll(storiesNotInInitiative);
-
-            //statistics
-            System.out.format("%d stories total\n", allStories.size());
-            System.out.format("%d stories not in initiative\n", storiesNotInInitiative.size());
-            System.out.format("%d stories not in specified release\n", storiesNotInRelease.size());
-            System.out.format("%d stories in no release\n", storiesInNoRelease.size());
-
-            storiesInNoRelease.forEach(System.out::println);
-
-            if (outName != null && initiative != null ) {
-                XMindWriter writer = new XMindWriter(outName, storiesInReleaseSet);
-                RallyNodeWalker walker = new RallyNodeWalker(writer);
-                walker.walk(initiative, null, 1);
-                writer.addOrphans(storiesNotInInitiative);
-                try {
-                    writer.close();
-                } catch (CoreException e) {
-                    e.printStackTrace();
+            if (outType != null) {
+                if (outType.equalsIgnoreCase("xmind") && (initiative!=null)) {
+                    XMindWriter xwriter = new XMindWriter(outName, stats.getStoriesInRelease());
+                    RallyNodeWalker walker = new RallyNodeWalker(xwriter);
+                    walker.walk(initiative, null, 1);
+                    try {
+                        xwriter.save();
+                    } catch (CoreException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
-                        /*
-
-            if (hwriter != null) {
-                hwriter.addOrphans(releaseStories.values());
-            }
-            for (JsonObject object : releaseStories.values()) {
-                String formattedID = object.get("FormattedID").getAsString();
-                String name = object.get("Name").getAsString();
-                System.out.format("%s - %s\n", formattedID, name);
-            }
-            */
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (hwriter != null) {
-                try {
-                    hwriter.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (CoreException e) {
-                    e.printStackTrace();
-                }
-            }
         }
-    }
-
-    private static Set<RallyNode> removeParents(Set<RallyNode> set) {
-        HashSet<RallyNode> results = new HashSet<>();
-        for (RallyNode rallyNode : set) {
-            if (!rallyNode.hasChildren()) {
-                results.add(rallyNode);
-            }
-        }
-        return results;
     }
 
     static String prettyPrintJSON(JsonElement element) {
@@ -206,6 +135,8 @@ public class Main {
         options.addOption(Option.builder(OPTION_RELEASE).longOpt("release")
                 .desc("Release (like \"some release\") - REQUIRED").required().numberOfArgs(1)
                 .optionalArg(false).argName("name").build());
+        options.addOption(Option.builder(OPTION_TYPE).longOpt("type").desc("type of output (xmind, excel, word)")
+                .numberOfArgs(1).optionalArg(false).argName("id").build());
         options.addOption(OPTION_NOPROXY, false, "disable proxy use (defaults to UTC proxy)");
         options.addOption(OPTION_HELP, false, "display help");
         return options;

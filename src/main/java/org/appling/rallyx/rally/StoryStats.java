@@ -1,0 +1,92 @@
+package org.appling.rallyx.rally;
+
+import org.appling.rallyx.rally.RallyNode;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Created by sappling on 7/23/2017.
+ */
+public class StoryStats {
+    private Set<RallyNode> storiesInRelease = new HashSet<>();
+    private Set<RallyNode> storiesUnderInitiative = new HashSet<>();
+    private Set<RallyNode> storiesNotInInitiative = new HashSet<>();
+    private Set<RallyNode> storiesNotInRelease = new HashSet<>();
+    private Set<RallyNode> storiesInNoRelease = new HashSet<>();
+    private Set<RallyNode> allStories = new HashSet<>();
+
+    StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList) {
+        if (storiesInReleaseList != null) {
+            storiesInRelease = new HashSet<>(storiesInReleaseList);
+        }
+        if (storiesUnderInitiativeList != null) {
+            storiesUnderInitiative = new HashSet<>(storiesUnderInitiativeList);
+        }
+        calculateSets();
+    }
+
+    public Set<RallyNode> getStoriesInRelease() {
+        return Collections.unmodifiableSet(storiesInRelease);
+    }
+
+    public Set<RallyNode> getStoriesUnderInitiative() {
+        return Collections.unmodifiableSet(storiesUnderInitiative);
+    }
+
+    public Set<RallyNode> getStoriesNotInInitiative() {
+        return Collections.unmodifiableSet(storiesNotInInitiative);
+    }
+
+    public Set<RallyNode> getStoriesNotInRelease() {
+        return Collections.unmodifiableSet(storiesNotInRelease);
+    }
+
+    public Set<RallyNode> getAllStories() {
+        return Collections.unmodifiableSet(allStories);
+    }
+
+    public void printStats() {
+        System.out.format("%d stories total\n", allStories.size());
+        System.out.format("%d stories not in initiative\n", storiesNotInInitiative.size());
+        System.out.format("%d stories not in specified release\n", storiesNotInRelease.size());
+        System.out.format("%d stories in no release\n", storiesInNoRelease.size());
+    }
+
+    private void calculateSets() {
+        // find all stories in the release that are not in the initiative
+        storiesNotInInitiative = new HashSet<>(storiesInRelease);
+        storiesNotInInitiative.removeAll(storiesUnderInitiative);
+
+        // find all stories in the initiative that are not in the release
+        storiesNotInRelease = new HashSet<>(storiesUnderInitiative);
+        storiesNotInRelease.removeAll(storiesInRelease);
+        storiesNotInRelease = removeParents(storiesNotInRelease);
+
+        // find stories in no release
+        storiesInNoRelease = storiesNotInRelease.stream()
+                .filter(s -> s.getRelease().isEmpty())
+                .collect(Collectors.toSet());
+
+        // all stories
+        allStories = new HashSet<>(storiesUnderInitiative);
+        allStories.addAll(storiesNotInInitiative);
+
+    }
+
+    private static Set<RallyNode> removeParents(Set<RallyNode> set) {
+        HashSet<RallyNode> results = new HashSet<>();
+        for (RallyNode rallyNode : set) {
+            if (!rallyNode.hasChildren()) {
+                results.add(rallyNode);
+            }
+        }
+        return results;
+    }
+
+
+}

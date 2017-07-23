@@ -1,14 +1,10 @@
-package org.appling.rallyx;
+package org.appling.rallyx.xmind;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import org.appling.rallyx.WalkAction;
 import org.appling.rallyx.rally.RallyNode;
 import org.xmind.core.*;
 import org.xmind.core.marker.IMarker;
 import org.xmind.core.marker.IMarkerGroup;
-import org.xmind.core.marker.IMarkerResource;
 import org.xmind.core.marker.IMarkerSheet;
 import org.xmind.core.style.IStyle;
 import org.xmind.core.style.IStyleSheet;
@@ -16,7 +12,6 @@ import org.xmind.ui.style.Styles;
 
 import java.io.*;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,11 +23,11 @@ public class XMindWriter implements WalkAction {
     private String filePath;
     private IMarker greenCheck;
     private IStyle markthroughStyle;
-    private Set<RallyNode> includeNodes;
+    private Set<RallyNode> releaseNodes;
 
-    public XMindWriter(String filePath, Set<RallyNode> includeNodes) {
+    public XMindWriter(String filePath, Set<RallyNode> releaseNodes) {
         this.filePath = filePath;
-        this.includeNodes = includeNodes;
+        this.releaseNodes = releaseNodes;
         IWorkbookBuilder builder = Core.getWorkbookBuilder();
         workbook = builder.createWorkbook(filePath);
         sheet = workbook.getPrimarySheet();
@@ -63,7 +58,7 @@ public class XMindWriter implements WalkAction {
         return sheet.getRootTopic();
     }
 
-    public void close() throws IOException, CoreException {
+    public void save() throws IOException, CoreException {
         workbook.save(filePath);
     }
 
@@ -138,7 +133,7 @@ public class XMindWriter implements WalkAction {
         }
 
         // mark through any leaf nodes that aren't in release
-        if (!node.hasChildren() && !includeNodes.contains(node)) {
+        if (!node.hasChildren() && !releaseNodes.contains(node)) {
             newTopic.setStyleId(markthroughStyle.getId());
         }
         return newTopic;
