@@ -19,8 +19,10 @@ public class StoryStats {
     private Set<RallyNode> storiesNotInRelease = new HashSet<>();
     private Set<RallyNode> storiesInNoRelease = new HashSet<>();
     private Set<RallyNode> allStories = new HashSet<>();
+    private RallyNode initiative;
 
-    StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList) {
+    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, RallyNode initiative) {
+        this.initiative = initiative;
         if (storiesInReleaseList != null) {
             storiesInRelease = new HashSet<>(storiesInReleaseList);
         }
@@ -28,6 +30,10 @@ public class StoryStats {
             storiesUnderInitiative = new HashSet<>(storiesUnderInitiativeList);
         }
         calculateSets();
+    }
+
+    public RallyNode getInitiative() {
+        return initiative;
     }
 
     public Set<RallyNode> getStoriesInRelease() {

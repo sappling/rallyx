@@ -3,6 +3,7 @@ package org.appling.rallyx;
 import com.google.gson.*;
 import com.rallydev.rest.RallyRestApi;
 import org.apache.commons.cli.*;
+import org.appling.rallyx.excel.ExcelWriter;
 import org.appling.rallyx.rally.*;
 import org.appling.rallyx.xmind.XMindWriter;
 import org.xmind.core.CoreException;
@@ -98,7 +99,7 @@ public class Main {
             }
 
             // statistics
-            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList);
+            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, initiative);
             stats.printStats();
 
             if (outType != null) {
@@ -106,14 +107,13 @@ public class Main {
                     XMindWriter xwriter = new XMindWriter(outName, stats.getStoriesInRelease());
                     RallyNodeWalker walker = new RallyNodeWalker(xwriter);
                     walker.walk(initiative, null, 1);
-                    try {
-                        xwriter.save();
-                    } catch (CoreException e) {
-                        e.printStackTrace();
-                    }
+                    xwriter.save();
+                } else if (outType.equalsIgnoreCase("excel")) {
+                    ExcelWriter excelWriter = new ExcelWriter(stats);
+                    excelWriter.write(outName);
                 }
             }
-        } catch (URISyntaxException | IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

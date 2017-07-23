@@ -8,12 +8,12 @@ import com.rallydev.rest.util.QueryFilter;
  * Created by sappling on 7/19/2017.
  */
 public class RallyQueryFactory {
-    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children","Feature", "ObjectID", "DragAndDropRank", "ScheduleState", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories");
+    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children","Feature", "ObjectID", "DragAndDropRank", "Project", "ScheduleState", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories");
 
     public static QueryRequest findInitiative(String initiativeID) {
         QueryRequest request = new QueryRequest("PortfolioItem/Initiative");
 
-        request.setFetch(new Fetch("FormattedID", "Name", "Children", "Description", "ObjectID", "DirectChildrenCount", "_ref", "_type"));
+        request.setFetch(new Fetch("FormattedID", "Name", "Children", "Description", "ObjectID", "DirectChildrenCount", "Project", "_ref", "_type"));
 
         request.setQueryFilter(new QueryFilter("FormattedID", "=", initiativeID));
 
