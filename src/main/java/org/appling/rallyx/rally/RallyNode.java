@@ -86,6 +86,17 @@ public class RallyNode {
         return TYPE_US.equals(getType());
     }
 
+    public String getURL() {
+        String objid = getObjectID();
+        String type = getType().toLowerCase();
+        if (isUserStory()) {
+            type = "userstory";
+        }
+
+        return "https://rally1.rallydev.com/#/detail/"+type+"/"+objid;
+    }
+
+
     public String toString() {
         return getFormattedId()+": "+getName() + " |rel:"+getRelease();
     }

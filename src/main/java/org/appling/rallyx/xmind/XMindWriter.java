@@ -62,16 +62,6 @@ public class XMindWriter implements WalkAction {
         workbook.save(filePath);
     }
 
-    public String getURL(RallyNode obj) {
-        String objid = obj.getObjectID();
-        String type = obj.getType().toLowerCase();
-        if (type.equals("hierarchicalrequirement")) {
-            type = "userstory";
-        }
-
-        return "https://rally1.rallydev.com/#/detail/"+type+"/"+objid;
-    }
-
 
     @Override
     public Object act(RallyNode node, Object parentNative, int depth) {
@@ -125,7 +115,7 @@ public class XMindWriter implements WalkAction {
         String title = node.getName() + " [" +
                 node.getFormattedId() + "]";
         newTopic.setTitleText(title);
-        newTopic.setHyperlink(getURL(node));
+        newTopic.setHyperlink(node.getURL());
 
         String scheduleState = node.getScheduleState();
         if (scheduleState.equalsIgnoreCase("Accepted") || (scheduleState.equalsIgnoreCase("Completed") )) {

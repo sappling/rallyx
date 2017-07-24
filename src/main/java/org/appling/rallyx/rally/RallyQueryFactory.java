@@ -17,8 +17,8 @@ public class RallyQueryFactory {
 
         request.setQueryFilter(new QueryFilter("FormattedID", "=", initiativeID));
 
-        request.setPageSize(1);
-        request.setLimit(1);
+        //request.setPageSize(1);
+        request.setLimit(1000);
 
         return request;
     }

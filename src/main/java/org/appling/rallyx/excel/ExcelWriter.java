@@ -1,9 +1,8 @@
 package org.appling.rallyx.excel;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.StoryStats;
@@ -19,6 +18,8 @@ import java.util.Set;
 public class ExcelWriter {
     private StoryStats stats;
     private int rowNum = 0;
+    CellStyle hlink_style;
+
     // add project
     String headers[] = {"ID", "Name", "Release", "Schedule State", "Initiative", "Children Count"};
 
@@ -29,6 +30,8 @@ public class ExcelWriter {
     public void write(String outName) throws IOException {
         Workbook wb = new XSSFWorkbook();
         Sheet s = wb.createSheet();
+
+        initializeStyles(wb);
 
         RallyNode initiative = stats.getInitiative();
         String initiativeName = "";
@@ -51,15 +54,29 @@ public class ExcelWriter {
         for (String header : headers) {
             s.autoSizeColumn(column++);
         }
+        s.setAutoFilter(CellRangeAddress.valueOf("A1:F"+Integer.toString(rowNum-1)));
         wb.write(new FileOutputStream(outName));
     }
 
+    private void initializeStyles(Workbook wb) {
+        hlink_style = wb.createCellStyle();
+        Font hlink_font = wb.createFont();
+        hlink_font.setUnderline(Font.U_SINGLE);
+        hlink_font.setColor(IndexedColors.BLUE.getIndex());
+        hlink_style.setFont(hlink_font);
+    }
+
     private void writeRows(Sheet s, Set<RallyNode> nodes, String initiativeName) {
+        CreationHelper createHelper = s.getWorkbook().getCreationHelper();
         for (RallyNode node : nodes) {
             int column = 0;
             Row row = s.createRow(rowNum++);
             Cell cell = row.createCell(column++);
             cell.setCellValue(node.getFormattedId());
+            Hyperlink link = createHelper.createHyperlink(HyperlinkType.URL);
+            link.setAddress(node.getURL());
+            cell.setHyperlink(link);
+            cell.setCellStyle(hlink_style);
 
             cell = row.createCell(column++);
             cell.setCellValue(node.getName());
