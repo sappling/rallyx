@@ -7,10 +7,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.StoryStats;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by sappling on 7/23/2017.
@@ -21,7 +22,7 @@ public class ExcelWriter {
     CellStyle hlink_style;
 
     // add project
-    String headers[] = {"ID", "Name", "Release", "Schedule State", "Initiative", "Feature", "Children Count"};
+    String headers[] = {"Rank", "ID", "Name", "Release", "Schedule State", "Iteration", "Initiative", "Feature", "Children Count", "Project", "Task Est Tot", "Description Length"};
 
     public ExcelWriter(StoryStats stats) {
         this.stats = stats;
@@ -46,15 +47,17 @@ public class ExcelWriter {
             cell.setCellValue(header);
         }
 
-        writeRows(s, stats.getStoriesUnderInitiative());
+        ArrayList<RallyNode> allStories = new ArrayList<>(stats.getAllStories());
+        allStories.sort(new RankComparator());
 
-        writeRows(s, stats.getStoriesNotInInitiative());
+        writeRows(s, allStories);
+
 
         column = 0;
         for (String header : headers) {
             s.autoSizeColumn(column++);
         }
-        s.setAutoFilter(CellRangeAddress.valueOf("A1:F"+Integer.toString(rowNum-1)));
+        s.setAutoFilter(CellRangeAddress.valueOf("A1:L"+Integer.toString(rowNum-1)));
         wb.write(new FileOutputStream(outName));
     }
 
@@ -66,37 +69,90 @@ public class ExcelWriter {
         hlink_style.setFont(hlink_font);
     }
 
-    private void writeRows(Sheet s, Set<RallyNode> nodes) {
+    private void writeRows(Sheet s, List<RallyNode> nodes) {
+        int rank = 1;
         CreationHelper createHelper = s.getWorkbook().getCreationHelper();
         for (RallyNode node : nodes) {
             int column = 0;
             Row row = s.createRow(rowNum++);
-            Cell cell = row.createCell(column++);
+            Cell cell;
+
+            // Rank
+            cell = row.createCell(column++);
+            cell.setCellValue(rank++);
+
+            // ID
+            cell = row.createCell(column++);
             cell.setCellValue(node.getFormattedId());
             Hyperlink link = createHelper.createHyperlink(HyperlinkType.URL);
             link.setAddress(node.getURL());
             cell.setHyperlink(link);
             cell.setCellStyle(hlink_style);
 
+            // Name
             cell = row.createCell(column++);
             cell.setCellValue(node.getName());
 
+            // Release
             cell = row.createCell(column++);
             cell.setCellValue(node.getRelease());
 
+            // Schedule State
             cell = row.createCell(column++);
             cell.setCellValue(node.getScheduleState());
 
+            // Iteration
+            cell = row.createCell(column++);
+            cell.setCellValue(node.getIterationName());
+
+            // Initiative
             cell = row.createCell(column++);
             RallyNode initiative = node.getInitiative();
             cell.setCellValue(initiative != null ? initiative.toString() : "");
 
+            // Feature
             cell = row.createCell(column++);
             RallyNode feature = node.getFeature();
             cell.setCellValue(feature!=null ? feature.toString() : "");
 
+            // Children Count
             cell = row.createCell(column++);
             cell.setCellValue(node.getChildren().size());
+
+            // Project
+            cell = row.createCell(column++);
+            cell.setCellValue(node.getProject());
+
+            // Task Estimate Total
+            cell = row.createCell(column++);
+            cell.setCellValue(node.getTaskEstimateTotal());
+
+            // Description Length
+            cell = row.createCell(column++);
+            cell.setCellValue(node.getDescription().length());
+        }
+    }
+
+    private class RankComparator implements Comparator<RallyNode> {
+        @Override
+        public int compare(RallyNode n1, RallyNode n2) {
+            byte[] bytes1 = n1.getRank().getBytes();
+            byte[] bytes2 = n2.getRank().getBytes();
+
+            int length = Math.max(bytes1.length, bytes2.length);
+            for (int i=0; i<length; i++) {
+                int diff = 0;
+                try {
+                    diff = bytes1[i] - bytes2[i];
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    // strings should be the same length, but assume shorter one comes first
+                    return bytes1.length - bytes2.length;
+                }
+                if (diff != 0) {
+                    return diff;
+                }
+            }
+            return 0;
         }
     }
 }

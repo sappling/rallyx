@@ -16,9 +16,9 @@ me to write this.
 
 How To Build
 ------------
-These samples include a gradle build file and wrapper.  Use the provided
-gradlew file to create a project for your IDE or a command line runner
-for the samples.  You will need to have a Java 8 SDK installed and your
+This project include a [gradle](http://gradle.org) build file and wrapper.
+Use the provided gradlew file to create a project for your IDE or a
+command line runner.  You will need to have a Java 8 SDK installed and your
 JAVA_HOME environment variable set.
 
 Run "gradlew idea" to generate a project for [IntelliJ Idea](https://www.jetbrains.com/idea/).
@@ -35,6 +35,7 @@ It will search in Rally beneath your default Rally "project".
 #### Environment Variables
 |Env Variable  | Description    |
 |--------------|----------------|
+|JAVA_HOME     | Path to your Java JRE or JDK (min ver 1.8)|
 |RALLY_KEY     | Set to the Rally API Key - **REQUIRED**|
 |PROXYURL      | URL of proxy (if needed) like http://myproxy.my.com:8080 |
 |PROXYUSER     | username of authenticated proxy |

@@ -20,6 +20,12 @@ public class RallyNode {
     private static final String FIELD_OBJID = "ObjectID";
     private static final String FIELD_CHILDCOUNT = "DirectChildrenCount";
     private static final String FIELD_RELEASE = "Release";
+    private static final String FIELD_RANK = "DragAndDropRank";
+    private static final String FIELD_PROJECT = "Project";
+    private static final String FIELD_TASKESTTOT = "TaskEstimateTotal";
+    private static final String FIELD_ITERATION = "Iteration";
+    private static final String FIELD_DESCRIPTION = "Description";
+
     private static final String TYPE_US = "HierarchicalRequirement";
 
     private final JsonObject jsonObject;
@@ -46,6 +52,19 @@ public class RallyNode {
         return result;
     }
 
+    private String getFieldInObjectAsString(String objectName, String fieldName) {
+        String result = "";
+        JsonElement el = jsonObject.get(objectName);
+        if (el != null && !el.isJsonNull()) {
+            JsonObject releaseObj = el.getAsJsonObject();
+            if (releaseObj != null) {
+                result = releaseObj.get(fieldName).getAsString();
+            }
+        }
+        return result;
+
+    }
+
     @NotNull
     public String getType() { return getStringField(FIELD_TYPE); }
 
@@ -57,6 +76,22 @@ public class RallyNode {
 
     @NotNull
     public String getName() { return getStringField(FIELD_NAME); }
+
+    @NotNull
+    public String getRank() { return getStringField(FIELD_RANK); }
+
+    @NotNull
+    public String getProject() { return getFieldInObjectAsString(FIELD_PROJECT, "Name"); }
+
+    //todo - convert to int
+    @NotNull
+    public String getTaskEstimateTotal() { return getStringField(FIELD_TASKESTTOT); }
+
+    @NotNull
+    public String getIterationName() { return getFieldInObjectAsString(FIELD_ITERATION, "Name"); }
+
+    @NotNull
+    public String getDescription() { return getStringField(FIELD_DESCRIPTION); }
 
     @NotNull
     public String getScheduleState() { return getStringField(FIELD_SSTATE); }
@@ -87,15 +122,7 @@ public class RallyNode {
 
     @NotNull
     public String getRelease() {
-        String result = "";
-        JsonElement el = jsonObject.get(FIELD_RELEASE);
-        if (el != null && !el.isJsonNull()) {
-            JsonObject releaseObj = el.getAsJsonObject();
-            if (releaseObj != null) {
-                result = releaseObj.get("Name").getAsString();
-            }
-        }
-        return result;
+        return getFieldInObjectAsString(FIELD_RELEASE, "Name");
     }
 
     public void addChild(RallyNode child) {
