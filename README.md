@@ -56,10 +56,10 @@ rallyx -i <id>  -r <name> [-f <filename>] [-noproxy] [-type <filetype>] [-help]
 ```
 
 
- ##Output Formats
+Output Formats
+--------------
 
-
- #### xmind
+#### xmind
 
  The xmind output format should be used with a file name ending in .xmind.
  It generates a mind map with the Initiative as the
@@ -69,13 +69,13 @@ rallyx -i <id>  -r <name> [-f <filename>] [-noproxy] [-type <filetype>] [-help]
  release, but not beneath the initiative will be on a separate "orphans"
  sheet.
 
- #### excel
+#### excel
  The excel output format should be used with a file name ending in
  .xlsx.  It generates a spreadsheet with the union of all the stories
  from beneath the initiative and the specified release.
 
- License
- -------
+License
+-------
 
 This application is licensed under the
  [Eclipse Public License (EPL) v1.0](http://www.eclipse.org/legal/epl-v10.html).
