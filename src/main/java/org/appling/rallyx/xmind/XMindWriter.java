@@ -29,7 +29,7 @@ public class XMindWriter implements WalkAction {
         this.filePath = filePath;
         this.releaseNodes = releaseNodes;
         IWorkbookBuilder builder = Core.getWorkbookBuilder();
-        workbook = builder.createWorkbook(filePath);
+        workbook = builder.createWorkbook();
         sheet = workbook.getPrimarySheet();
         sheet.setTitleText("Initiative");
 

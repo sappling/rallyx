@@ -32,16 +32,15 @@ public class InitiativeNodeFinder {
         if (queryResponse.wasSuccessful()) {
             JsonArray resultArray = queryResponse.getResults();
             JsonElement jsonInitiative = resultArray.get(0);
-            RallyNode node = new RallyNode(jsonInitiative.getAsJsonObject());
-
-            walk(node, 1);
+            RallyNode node = new RallyNode(jsonInitiative.getAsJsonObject(), null, null);
+            walk(node, node, null);
             return node;
         } else {
             throw new IOException("Error retrieving initiative '"+initiativeID+"'");
         }
     }
 
-    public void walk(RallyNode parentNode, int depth)  {
+    public void walk(RallyNode parentNode, RallyNode initiative, RallyNode feature)  {
         //WalkAction action,
         //parentNative = action.act(rallyObject, parentNative, depth);
 
@@ -66,9 +65,12 @@ public class InitiativeNodeFinder {
                 if (response.wasSuccessful()) {
                     JsonArray jsonArray = response.getResults();
                     for (JsonElement jsonEl : jsonArray) {
-                        RallyNode next = new RallyNode(jsonEl.getAsJsonObject());
+                        RallyNode next = new RallyNode(jsonEl.getAsJsonObject(), initiative, feature);
+                        if (next.getType().equals("PortfolioItem/Feature")) {
+                            feature = next;
+                        }
                         parentNode.addChild(next);
-                        walk(next, depth + 1);
+                        walk(next, initiative, feature);
                     }
                 }
             } catch (IOException e) {

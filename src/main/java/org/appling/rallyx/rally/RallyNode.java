@@ -3,6 +3,7 @@ package org.appling.rallyx.rally;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,12 +22,16 @@ public class RallyNode {
     private static final String FIELD_RELEASE = "Release";
     private static final String TYPE_US = "HierarchicalRequirement";
 
-    private JsonObject jsonObject;
-    private ArrayList<RallyNode> children;
-    private String id;
+    private final JsonObject jsonObject;
+    private final ArrayList<RallyNode> children;
+    private final String id;
+    private final RallyNode initiative;
+    private final RallyNode feature;
 
-    public RallyNode(JsonObject jsonObject) {
+    public RallyNode(JsonObject jsonObject, RallyNode initiative, RallyNode feature) {
         this.jsonObject = jsonObject;
+        this.initiative = initiative;
+        this.feature = feature;
         id = getStringField(FIELD_OBJID);
         children = new ArrayList<>();
     }
@@ -55,6 +60,30 @@ public class RallyNode {
 
     @NotNull
     public String getScheduleState() { return getStringField(FIELD_SSTATE); }
+
+    @Nullable
+    public RallyNode getFeature() { return feature; }
+
+    @NotNull
+    public String getFeatureName() {
+        String result = "";
+        if (feature != null) {
+            result = feature.getName();
+        }
+        return result;
+    }
+
+    @Nullable
+    public RallyNode getInitiative() { return initiative; }
+
+    @NotNull
+    public String getInitiativeName() {
+        String result = "";
+        if (initiative != null) {
+            result = initiative.getName();
+        }
+        return result;
+    }
 
     @NotNull
     public String getRelease() {
@@ -98,7 +127,7 @@ public class RallyNode {
 
 
     public String toString() {
-        return getFormattedId()+": "+getName() + " |rel:"+getRelease();
+        return getFormattedId()+": "+getName();
     }
 
     @Override

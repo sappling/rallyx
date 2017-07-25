@@ -21,7 +21,7 @@ public class ExcelWriter {
     CellStyle hlink_style;
 
     // add project
-    String headers[] = {"ID", "Name", "Release", "Schedule State", "Initiative", "Children Count"};
+    String headers[] = {"ID", "Name", "Release", "Schedule State", "Initiative", "Feature", "Children Count"};
 
     public ExcelWriter(StoryStats stats) {
         this.stats = stats;
@@ -46,9 +46,9 @@ public class ExcelWriter {
             cell.setCellValue(header);
         }
 
-        writeRows(s, stats.getStoriesUnderInitiative(), initiativeName);
+        writeRows(s, stats.getStoriesUnderInitiative());
 
-        writeRows(s, stats.getStoriesNotInInitiative(), "");
+        writeRows(s, stats.getStoriesNotInInitiative());
 
         column = 0;
         for (String header : headers) {
@@ -66,7 +66,7 @@ public class ExcelWriter {
         hlink_style.setFont(hlink_font);
     }
 
-    private void writeRows(Sheet s, Set<RallyNode> nodes, String initiativeName) {
+    private void writeRows(Sheet s, Set<RallyNode> nodes) {
         CreationHelper createHelper = s.getWorkbook().getCreationHelper();
         for (RallyNode node : nodes) {
             int column = 0;
@@ -88,7 +88,12 @@ public class ExcelWriter {
             cell.setCellValue(node.getScheduleState());
 
             cell = row.createCell(column++);
-            cell.setCellValue(initiativeName);
+            RallyNode initiative = node.getInitiative();
+            cell.setCellValue(initiative != null ? initiative.toString() : "");
+
+            cell = row.createCell(column++);
+            RallyNode feature = node.getFeature();
+            cell.setCellValue(feature!=null ? feature.toString() : "");
 
             cell = row.createCell(column++);
             cell.setCellValue(node.getChildren().size());

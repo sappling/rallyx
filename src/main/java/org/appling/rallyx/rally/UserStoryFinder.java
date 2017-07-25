@@ -32,7 +32,7 @@ public class UserStoryFinder {
         if (response.wasSuccessful()) {
             JsonArray jsonElements = response.getResults();
             for (JsonElement element : jsonElements) {
-                RallyNode next = new RallyNode(element.getAsJsonObject());
+                RallyNode next = new RallyNode(element.getAsJsonObject(), null, null);
                 result.add(next);
             }
         }
