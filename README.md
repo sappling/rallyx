@@ -29,14 +29,19 @@ directory.  From that directory you may run the tool using **bin/rallyx**.
 
 Running
 -------
+Use the script bin/rallyx.bat or bin/rallyx to run the tool.
 RallyX requires some environment variables and various command line arguments.
 It will search in Rally beneath your default Rally "project".
 
 #### Environment Variables
+While some of the values may be specified either as environment variables
+or in a properties file (see below), **JAVA_HOME** MUST be set as an
+environment variable in order to run.
+
 |Env Variable  | Description    |
 |--------------|----------------|
-|JAVA_HOME     | Path to your Java JRE or JDK (min ver 1.8)|
-|RALLY_KEY     | Set to the Rally API Key - **REQUIRED**|
+|JAVA_HOME     | Path to your Java JRE or JDK (min ver 1.8) **REQUIRED**|
+|RALLY_KEY     | Set the Rally API Key|
 |PROXYURL      | URL of proxy (if needed) like http://myproxy.my.com:8080 |
 |PROXYUSER     | username of authenticated proxy |
 |PROXYPASS     | password for authenticated proxy |
@@ -47,15 +52,28 @@ for a description of how to get an API Key.
 #### Command Line Arguments
 
 ```
-rallyx -i <id>  -r <name> [-f <filename>] [-noproxy] [-type <filetype>] [-help]
- -i,--initiative <id>      Initiative ID (like I203)
- -r,--release <name>       Release (like "some release") - REQUIRED
- -f,--file <filename>      output filename
- -noproxy                  disable proxy use even if env var set
- -type,--type <filetype>   type of output (xmind, excel, word)
- -help                     display help
+rallyx [-p <propfile>] [-i <id>] [-r <name>] [-f <filename>] [-noproxy] [-type <filetype>] [-help]
+ -p,--properties <propfile> properties file with options
+ -i,--initiative <id>       Initiative ID (like I203)
+ -r,--release <name>        Release (like "some release") - REQUIRED
+ -f,--file <filename>       output filename
+ -noproxy                   disable proxy use even if env var set
+ -type,--type <filetype>    type of output (xmind, excel, word)
+ -help                      display help
 ```
 
+#### Property Files
+You may also specify any of the environment variables and most of the
+command line options in a property file.  In this case, you would just
+use the -p propfile command line parameter to specify the properties
+file to use.  This is helpful when you want to run the same report
+frequently and just want to save all the options.  A sample properties
+file is included.  All of the lines of this sample file start with
+a '#' to comment out the line.  Remove this '#' from any option you wish
+to set in the file.
+
+Property files override any value set in an environment variable and
+command line parameters override any values set in property files.
 
 Output Formats
 --------------

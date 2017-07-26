@@ -37,7 +37,7 @@ public class XMindWriter implements WalkAction {
         IMarkerGroup markerGroup = markerSheet.createMarkerGroup(true);
         markerGroup.setName("schedule");
         try {
-            greenCheck = createMarker("completed", "markers/GreenCheck.png", workbook, markerGroup);
+            greenCheck = createMarker("completed", "/markers/GreenCheck.png", workbook, markerGroup);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -132,12 +132,11 @@ public class XMindWriter implements WalkAction {
 
     public static IMarker createMarker(String markerName, String iconPath, IWorkbook workbook, IMarkerGroup group) throws IOException {
         IMarkerSheet ims = workbook.getMarkerSheet();
-        File iconFile = new File(iconPath);
-        InputStream is = new FileInputStream(iconFile);
+        InputStream is = XMindWriter.class.getResourceAsStream(iconPath);
         if (is == null) {
-            throw new IOException("Error reading "+iconFile.getPath());
+            throw new IOException("Error reading image resource:"+iconPath);
         }
-        IMarker marker = ims.createMarker(iconFile.getName());
+        IMarker marker = ims.createMarker(markerName);
         marker.setName(markerName);
         OutputStream os = marker.getResource().getOutputStream();
         org.xmind.core.util.FileUtils.transfer(is, os, true);

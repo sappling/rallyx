@@ -27,3 +27,5 @@ dependencies {
 }
 
 
+task dist {}
+dist.dependsOn distZip, installDist
