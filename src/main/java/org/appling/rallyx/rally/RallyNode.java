@@ -5,8 +5,11 @@ import com.google.gson.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,7 +18,7 @@ import java.util.List;
 public class RallyNode {
     private static final String FIELD_TYPE = "_type";
     private static final String FIELD_FMT_ID = "FormattedID";
-    private static final String FIELD_NAME = "Name";
+    static final String FIELD_NAME = "Name";
     private static final String FIELD_SSTATE = "ScheduleState";
     private static final String FIELD_OBJID = "ObjectID";
     private static final String FIELD_CHILDCOUNT = "DirectChildrenCount";
@@ -23,10 +26,13 @@ public class RallyNode {
     private static final String FIELD_RANK = "DragAndDropRank";
     private static final String FIELD_PROJECT = "Project";
     private static final String FIELD_TASKESTTOT = "TaskEstimateTotal";
+    private static final String FIELD_PLANESTIMATE = "PlanEstimate";
     private static final String FIELD_ITERATION = "Iteration";
     private static final String FIELD_DESCRIPTION = "Description";
 
     private static final String TYPE_US = "HierarchicalRequirement";
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     private final JsonObject jsonObject;
     private final ArrayList<RallyNode> children;
@@ -43,22 +49,47 @@ public class RallyNode {
     }
 
     @NotNull
-    private String getStringField(String fieldName) {
+    protected String getStringField(String fieldName) {
         String result = "";
         JsonElement element = jsonObject.get(fieldName);
-        if (element != null) {
+        if (element != null && !element.isJsonNull()) {
             result = element.getAsString();
         }
         return result;
     }
 
-    private String getFieldInObjectAsString(String objectName, String fieldName) {
+    protected float getNumericField(String fieldName) {
+        float result = 0;
+        String stringField = getStringField(fieldName);
+        if (stringField.length() > 0) {
+            result = Float.parseFloat(stringField);
+        }
+        return result;
+    }
+
+    @Nullable
+    protected Date getDateField(String fieldName) {
+        Date result = null;
+        JsonElement element = jsonObject.get(fieldName);
+        if (element != null) {
+            String dateString = element.getAsString();
+            try {
+                result = dateFormat.parse(dateString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+                // intentionally ignore and fall through to null result
+            }
+        }
+        return result;
+    }
+
+    protected String getFieldInObjectAsString(String objectName, String fieldName) {
         String result = "";
         JsonElement el = jsonObject.get(objectName);
         if (el != null && !el.isJsonNull()) {
-            JsonObject releaseObj = el.getAsJsonObject();
-            if (releaseObj != null) {
-                result = releaseObj.get(fieldName).getAsString();
+            JsonObject obj = el.getAsJsonObject();
+            if (obj != null) {
+                result = obj.get(fieldName).getAsString();
             }
         }
         return result;
@@ -81,20 +112,54 @@ public class RallyNode {
     public String getRank() { return getStringField(FIELD_RANK); }
 
     @NotNull
-    public String getProject() { return getFieldInObjectAsString(FIELD_PROJECT, "Name"); }
+    public String getProjectName() { return getFieldInObjectAsString(FIELD_PROJECT, "Name"); }
 
-    //todo - convert to int
-    @NotNull
-    public String getTaskEstimateTotal() { return getStringField(FIELD_TASKESTTOT); }
+    @Nullable
+    public Project getProject() {
+        Project result = null;
+        if (jsonObject.has(FIELD_PROJECT)) {
+            JsonElement jsonElement = jsonObject.get(FIELD_PROJECT);
+            if (!jsonElement.isJsonNull()) {
+                result = new Project(jsonElement.getAsJsonObject());
+            }
+        }
+        return result;
+    }
+
+    public float getTaskEstimateTotal() { return getNumericField(FIELD_TASKESTTOT); }
+
+    public float getPlanEstimate() { return getNumericField(FIELD_PLANESTIMATE); }
 
     @NotNull
     public String getIterationName() { return getFieldInObjectAsString(FIELD_ITERATION, "Name"); }
+
+    @Nullable
+    public Iteration getIteration() {
+        Iteration result = null;
+        if (jsonObject.has(FIELD_ITERATION)) {
+            JsonElement jsonElement = jsonObject.get(FIELD_ITERATION);
+            if (!jsonElement.isJsonNull()) {
+                result = new Iteration(jsonElement.getAsJsonObject());
+            }
+        }
+        return result;
+    }
 
     @NotNull
     public String getDescription() { return getStringField(FIELD_DESCRIPTION); }
 
     @NotNull
-    public String getScheduleState() { return getStringField(FIELD_SSTATE); }
+    public String getScheduleStateName() { return getStringField(FIELD_SSTATE); }
+
+    @Nullable
+    public ScheduleState getScheduleState() {
+        ScheduleState result = null;
+        String ssName = getStringField(FIELD_SSTATE);
+        if (ssName.length() > 0) {
+            result = ScheduleState.fromString(ssName);
+        }
+        return result;
+    }
 
     @Nullable
     public RallyNode getFeature() { return feature; }
@@ -133,6 +198,7 @@ public class RallyNode {
         return Collections.unmodifiableList(children);
     }
 
+    //todo - this technique is specific to user stories I think had to override in Project
     public boolean hasChildren() {
         String countString = getStringField(FIELD_CHILDCOUNT);
         return (countString.length() > 0 && !countString.equals("0"));

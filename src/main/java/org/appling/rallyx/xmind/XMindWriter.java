@@ -117,7 +117,7 @@ public class XMindWriter implements WalkAction {
         newTopic.setTitleText(title);
         newTopic.setHyperlink(node.getURL());
 
-        String scheduleState = node.getScheduleState();
+        String scheduleState = node.getScheduleStateName();
         if (scheduleState.equalsIgnoreCase("Accepted") || (scheduleState.equalsIgnoreCase("Completed") )) {
             newTopic.addMarker(greenCheck.getId());
         }

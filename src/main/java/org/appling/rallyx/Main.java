@@ -5,6 +5,7 @@ import com.rallydev.rest.RallyRestApi;
 import org.apache.commons.cli.*;
 import org.appling.rallyx.excel.ExcelWriter;
 import org.appling.rallyx.rally.*;
+import org.appling.rallyx.reports.ReportWriter;
 import org.appling.rallyx.xmind.XMindWriter;
 
 import java.io.File;
@@ -135,6 +136,9 @@ public class Main {
                 } else if (outType.equalsIgnoreCase("excel")) {
                     ExcelWriter excelWriter = new ExcelWriter(stats);
                     excelWriter.write(outName);
+                } else if (outType.equalsIgnoreCase("report")) {
+                    ReportWriter reportWriter = new ReportWriter(stats);
+                    reportWriter.write(outName);
                 }
             }
         } catch (Exception e) {
@@ -214,7 +218,7 @@ public class Main {
         options.addOption(Option.builder(OPTION_RELEASE).longOpt(PROP_RELEASE)
                 .desc("Release (like \"some release\") - REQUIRED").numberOfArgs(1)
                 .optionalArg(false).argName("name").build());
-        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, word)")
+        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, report)")
                 .numberOfArgs(1).optionalArg(false).argName("filetype").build());
         options.addOption(OPTION_NOPROXY, false, "disable proxy use even if env var set");
         options.addOption(Option.builder(OPTION_FILE).longOpt(PROP_FILE).desc("output filename")

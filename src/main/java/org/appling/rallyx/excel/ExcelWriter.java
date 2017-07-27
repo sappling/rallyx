@@ -5,12 +5,12 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.appling.rallyx.rally.RallyNode;
+import org.appling.rallyx.rally.RankComparator;
 import org.appling.rallyx.rally.StoryStats;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -99,7 +99,7 @@ public class ExcelWriter {
 
             // Schedule State
             cell = row.createCell(column++);
-            cell.setCellValue(node.getScheduleState());
+            cell.setCellValue(node.getScheduleStateName());
 
             // Iteration
             cell = row.createCell(column++);
@@ -121,7 +121,7 @@ public class ExcelWriter {
 
             // Project
             cell = row.createCell(column++);
-            cell.setCellValue(node.getProject());
+            cell.setCellValue(node.getProjectName());
 
             // Task Estimate Total
             cell = row.createCell(column++);
@@ -130,29 +130,6 @@ public class ExcelWriter {
             // Description Length
             cell = row.createCell(column++);
             cell.setCellValue(node.getDescription().length());
-        }
-    }
-
-    private class RankComparator implements Comparator<RallyNode> {
-        @Override
-        public int compare(RallyNode n1, RallyNode n2) {
-            byte[] bytes1 = n1.getRank().getBytes();
-            byte[] bytes2 = n2.getRank().getBytes();
-
-            int length = Math.max(bytes1.length, bytes2.length);
-            for (int i=0; i<length; i++) {
-                int diff = 0;
-                try {
-                    diff = bytes1[i] - bytes2[i];
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    // strings should be the same length, but assume shorter one comes first
-                    return bytes1.length - bytes2.length;
-                }
-                if (diff != 0) {
-                    return diff;
-                }
-            }
-            return 0;
         }
     }
 }
