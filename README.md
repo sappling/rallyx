@@ -18,7 +18,7 @@ The "check" output type is also handy to check for common errors in stories.
 
 Download
 --------
-A zip of the latest released version is [here](releases).
+A zip of the latest released version is [here](https://github.com/sappling/rallyx/releases).
 
 How To Build
 ------------
