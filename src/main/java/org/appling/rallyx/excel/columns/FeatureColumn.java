@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class FeatureColumn implements ColumnWriter {
+public class FeatureColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Feature";
@@ -22,5 +22,6 @@ public class FeatureColumn implements ColumnWriter {
         }
         RallyNode feature = node.getFeature();
         cell.setCellValue(feature!=null ? feature.toString() : "");
+        setStyle(cell, context);
     }
 }

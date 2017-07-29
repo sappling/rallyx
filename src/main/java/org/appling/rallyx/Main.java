@@ -1,9 +1,9 @@
 package org.appling.rallyx;
 
-import com.google.gson.*;
 import com.rallydev.rest.RallyRestApi;
 import org.apache.commons.cli.*;
-import org.appling.rallyx.excel.ExcelWriter;
+import org.appling.rallyx.excel.ExcelIssueWriter;
+import org.appling.rallyx.excel.ExcelStoryWriter;
 import org.appling.rallyx.rally.*;
 import org.appling.rallyx.reports.ReportWriter;
 import org.appling.rallyx.xmind.XMindWriter;
@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -134,11 +133,11 @@ public class Main {
                     xwriter.addOrphans(stats.getStoriesNotInInitiative());
                     xwriter.save();
                 } else if (outType.equalsIgnoreCase("excel")) {
-                    ExcelWriter excelWriter = new ExcelWriter(stats);
-                    excelWriter.write(outName);
-                } else if (outType.equalsIgnoreCase("report")) {
-                    ReportWriter reportWriter = new ReportWriter(stats);
-                    reportWriter.write(outName);
+                    ExcelStoryWriter excelStoryWriter = new ExcelStoryWriter(stats);
+                    excelStoryWriter.write(outName);
+                } else if (outType.equalsIgnoreCase("check")) {
+                    ExcelIssueWriter issueWriter = new ExcelIssueWriter(stats);
+                    issueWriter.write(outName);
                 }
             }
         } catch (Exception e) {
@@ -218,7 +217,7 @@ public class Main {
         options.addOption(Option.builder(OPTION_RELEASE).longOpt(PROP_RELEASE)
                 .desc("Release (like \"some release\") - REQUIRED").numberOfArgs(1)
                 .optionalArg(false).argName("name").build());
-        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, report)")
+        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, check)")
                 .numberOfArgs(1).optionalArg(false).argName("filetype").build());
         options.addOption(OPTION_NOPROXY, false, "disable proxy use even if env var set");
         options.addOption(Option.builder(OPTION_FILE).longOpt(PROP_FILE).desc("output filename")

@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class TaskEstimateTotalColumn implements ColumnWriter {
+public class TaskEstimateTotalColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Task Total";
@@ -21,5 +21,6 @@ public class TaskEstimateTotalColumn implements ColumnWriter {
             throw new BadContextException("Missing RallyNode");
         }
         cell.setCellValue(node.getTaskEstimateTotal());
+        setStyle(cell, context);
     }
 }

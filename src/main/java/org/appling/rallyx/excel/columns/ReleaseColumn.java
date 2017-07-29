@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class ReleaseColumn implements ColumnWriter {
+public class ReleaseColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Release";
@@ -21,5 +21,6 @@ public class ReleaseColumn implements ColumnWriter {
             throw new BadContextException("Missing RallyNode");
         }
         cell.setCellValue(node.getRelease());
+        setStyle(cell, context);
     }
 }

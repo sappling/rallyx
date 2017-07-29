@@ -80,4 +80,15 @@ public class ExcelWritingContext {
     public Hyperlink createHyperlink() {
         return creationHelper.createHyperlink(HyperlinkType.URL);
     }
+
+    public boolean hasError() {
+        boolean result = false;
+        for (Issue issue : issues) {
+            if (issue.getSeverity() == Issue.Severity.Error) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
 }

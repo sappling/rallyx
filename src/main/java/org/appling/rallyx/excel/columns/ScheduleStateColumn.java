@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class ScheduleStateColumn implements ColumnWriter {
+public class ScheduleStateColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Schedule State";
@@ -21,5 +21,6 @@ public class ScheduleStateColumn implements ColumnWriter {
             throw new BadContextException("Missing RallyNode");
         }
         cell.setCellValue(node.getScheduleStateName());
+        setStyle(cell, context);
     }
 }

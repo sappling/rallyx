@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class DescriptionLengthColumn implements ColumnWriter {
+public class DescriptionLengthColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Description Length";
@@ -21,5 +21,6 @@ public class DescriptionLengthColumn implements ColumnWriter {
             throw new BadContextException("Missing RallyNode");
         }
         cell.setCellValue(node.getDescription().length());
+        setStyle(cell, context);
     }
 }

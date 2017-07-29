@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class ChildCountColumn implements ColumnWriter {
+public class ChildCountColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Children";
@@ -21,5 +21,6 @@ public class ChildCountColumn implements ColumnWriter {
             throw new BadContextException("Missing RallyNode");
         }
         cell.setCellValue(node.getChildren().size());
+        setStyle(cell, context);
     }
 }

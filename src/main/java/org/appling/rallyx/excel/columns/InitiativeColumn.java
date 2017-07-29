@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class InitiativeColumn implements ColumnWriter {
+public class InitiativeColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Initiative";
@@ -22,6 +22,6 @@ public class InitiativeColumn implements ColumnWriter {
         }
         RallyNode initiative = node.getInitiative();
         cell.setCellValue(initiative != null ? initiative.toString() : "");
-
+        setStyle(cell, context);
     }
 }

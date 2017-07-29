@@ -8,7 +8,7 @@ import org.appling.rallyx.rally.RallyNode;
 /**
  * Created by sappling on 7/29/2017.
  */
-public class ProjectColumn implements ColumnWriter {
+public class ProjectColumn extends RedErrorColumnWriter {
     @Override
     public String getColumnHeader() {
         return "Project";
@@ -21,5 +21,6 @@ public class ProjectColumn implements ColumnWriter {
             throw new BadContextException("Missing RallyNode");
         }
         cell.setCellValue(node.getProjectName());
+        setStyle(cell, context);
     }
 }
