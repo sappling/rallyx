@@ -11,7 +11,9 @@ import org.xmind.core.style.IStyleSheet;
 import org.xmind.ui.style.Styles;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -26,7 +28,7 @@ public class XMindWriter implements WalkAction {
     private Set<RallyNode> releaseNodes;
 
     public XMindWriter(String filePath, Set<RallyNode> releaseNodes) {
-        this.filePath = filePath;
+        this.filePath = ensureExtention(filePath,"Stories.xmind");
         this.releaseNodes = releaseNodes;
         IWorkbookBuilder builder = Core.getWorkbookBuilder();
         workbook = builder.createWorkbook();
@@ -142,6 +144,17 @@ public class XMindWriter implements WalkAction {
         org.xmind.core.util.FileUtils.transfer(is, os, true);
         group.addMarker(marker);
         return marker;
+    }
+
+    protected String ensureExtention(String outName, String defaultName) {
+        String result = outName;
+        if (outName == null || outName.length()==0) {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd-");
+            result = fmt.format(new Date())+defaultName;
+        } else if (!outName.endsWith(".xmind")) {
+            result += ".xmind";
+        }
+        return result;
     }
 
 }

@@ -17,6 +17,7 @@ import org.appling.rallyx.reports.IssueRankComparator;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -72,7 +73,7 @@ public class ExcelIssueWriter extends ExcelStoryWriter {
         }
         String lastColumn = CellReference.convertNumToColString(columnNum-1);
         s.setAutoFilter(CellRangeAddress.valueOf("A1:"+lastColumn+Integer.toString(rowNum-1)));
-        FileOutputStream outStream = new FileOutputStream(outName);
+        FileOutputStream outStream = new FileOutputStream(ensureExtention(outName, "Check.xlsx"));
         wb.write(outStream);
         outStream.close();
     }

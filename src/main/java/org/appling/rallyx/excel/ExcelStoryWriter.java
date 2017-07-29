@@ -11,7 +11,9 @@ import org.appling.rallyx.rally.StoryStats;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -70,7 +72,7 @@ public class ExcelStoryWriter {
         }
         String lastColumn = CellReference.convertNumToColString(columnNum-1);
         s.setAutoFilter(CellRangeAddress.valueOf("A1:"+lastColumn+Integer.toString(rowNum-1)));
-        FileOutputStream outStream = new FileOutputStream(outName);
+        FileOutputStream outStream = new FileOutputStream(ensureExtention(outName, "Report.xlsx"));
         wb.write(outStream);
         outStream.close();
     }
@@ -88,7 +90,7 @@ public class ExcelStoryWriter {
 
         error_style = wb.createCellStyle();
         Font errorFont = wb.createFont();
-        errorFont.setColor(IndexedColors.DARK_RED.getIndex());
+        errorFont.setColor(IndexedColors.RED.getIndex());
         error_style.setFont(errorFont);
     }
 
@@ -110,5 +112,16 @@ public class ExcelStoryWriter {
                 columnWriter.writeCell(cell, context);
             }
         }
+    }
+
+    protected String ensureExtention(String outName, String defaultName) {
+        String result = outName;
+        if (outName == null || outName.length()==0) {
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd-");
+            result = fmt.format(new Date())+defaultName;
+        } else if (!outName.endsWith(".xlsx")) {
+            result += ".xlsx";
+        }
+        return result;
     }
 }
