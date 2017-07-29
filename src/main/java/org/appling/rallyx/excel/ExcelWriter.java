@@ -3,7 +3,9 @@ package org.appling.rallyx.excel;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.appling.rallyx.excel.columns.*;
 import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.RankComparator;
 import org.appling.rallyx.rally.StoryStats;
@@ -17,20 +19,52 @@ import java.util.List;
  * Created by sappling on 7/23/2017.
  */
 public class ExcelWriter {
+    private static final String HDR_RANK = "Rank";
+    private static final String HDR_ID = "ID";
+    private static final String HDR_NAME = "Name";
+    private static final String HDR_RELEASE = "Release";
+    private static final String HDR_SCHEDS = "Schedule State";
+    private static final String HDR_ITER = "Iteration";
+    private static final String HDR_INIT = "Initiative";
+    private static final String HDR_FEATURE = "Feature";
+    private static final String HDR_CHILDC = "Children Count";
+    private static final String HDR_PROJECT = "Project";
+    private static final String HDR_TASKTOT = "Task Est Tot";
+    private static final String HDR_DESCLEN = "Description Length";
+    
     private StoryStats stats;
     private int rowNum = 0;
+    CreationHelper createHelper;
     CellStyle hlink_style;
+    int rank;
 
     // add project
-    String headers[] = {"Rank", "ID", "Name", "Release", "Schedule State", "Iteration", "Initiative", "Feature", "Children Count", "Project", "Task Est Tot", "Description Length"};
+    String headers[] = {HDR_RANK, HDR_ID, HDR_NAME, HDR_RELEASE, HDR_SCHEDS, HDR_ITER, HDR_INIT, HDR_FEATURE, HDR_CHILDC, HDR_PROJECT, HDR_TASKTOT, HDR_DESCLEN};
+    ColumnWriter colunns[] = {
+            new RankColumn(),
+            new IdColumn(),
+            new NameColumn(),
+            new ReleaseColumn(),
+            new ScheduleStateColumn(),
+            new IterationColumn(),
+            new InitiativeColumn(),
+            new FeatureColumn(),
+            new ChildCountColumn(),
+            new ProjectColumn(),
+            new TaskEstimateTotalColumn(),
+            new DescriptionLengthColumn()
+    };
 
+    
     public ExcelWriter(StoryStats stats) {
         this.stats = stats;
+        rank = 1;
     }
 
     public void write(String outName) throws IOException {
         Workbook wb = new XSSFWorkbook();
         Sheet s = wb.createSheet();
+        createHelper = wb.getCreationHelper();
 
         initializeStyles(wb);
 
@@ -41,10 +75,10 @@ public class ExcelWriter {
         }
 
         Row headerRow = s.createRow(rowNum++);
-        int column = 0;
-        for (String header : headers) {
-            Cell cell = headerRow.createCell(column++);
-            cell.setCellValue(header);
+        int columnNum = 0;
+        for (ColumnWriter columnWriter : colunns) {
+            Cell cell = headerRow.createCell(columnNum++);
+            cell.setCellValue(columnWriter.getColumnHeader());
         }
 
         ArrayList<RallyNode> allStories = new ArrayList<>(stats.getAllStories());
@@ -53,11 +87,12 @@ public class ExcelWriter {
         writeRows(s, allStories);
 
 
-        column = 0;
+        columnNum = 0;
         for (String header : headers) {
-            s.autoSizeColumn(column++);
+            s.autoSizeColumn(columnNum++);
         }
-        s.setAutoFilter(CellRangeAddress.valueOf("A1:L"+Integer.toString(rowNum-1)));
+        String lastColumn = CellReference.convertNumToColString(columnNum-1);
+        s.setAutoFilter(CellRangeAddress.valueOf("A1:"+lastColumn+Integer.toString(rowNum-1)));
         wb.write(new FileOutputStream(outName));
     }
 
@@ -70,66 +105,20 @@ public class ExcelWriter {
     }
 
     private void writeRows(Sheet s, List<RallyNode> nodes) {
-        int rank = 1;
-        CreationHelper createHelper = s.getWorkbook().getCreationHelper();
+        ExcelWritingContext context = new ExcelWritingContext(s.getWorkbook());
+        context.setLinkStyle(hlink_style);
+        rank = 1;
         for (RallyNode node : nodes) {
+            context.setRank(rank++);
+            context.setNode(node);
             int column = 0;
             Row row = s.createRow(rowNum++);
             Cell cell;
 
-            // Rank
-            cell = row.createCell(column++);
-            cell.setCellValue(rank++);
-
-            // ID
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getFormattedId());
-            Hyperlink link = createHelper.createHyperlink(HyperlinkType.URL);
-            link.setAddress(node.getURL());
-            cell.setHyperlink(link);
-            cell.setCellStyle(hlink_style);
-
-            // Name
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getName());
-
-            // Release
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getRelease());
-
-            // Schedule State
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getScheduleStateName());
-
-            // Iteration
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getIterationName());
-
-            // Initiative
-            cell = row.createCell(column++);
-            RallyNode initiative = node.getInitiative();
-            cell.setCellValue(initiative != null ? initiative.toString() : "");
-
-            // Feature
-            cell = row.createCell(column++);
-            RallyNode feature = node.getFeature();
-            cell.setCellValue(feature!=null ? feature.toString() : "");
-
-            // Children Count
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getChildren().size());
-
-            // Project
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getProjectName());
-
-            // Task Estimate Total
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getTaskEstimateTotal());
-
-            // Description Length
-            cell = row.createCell(column++);
-            cell.setCellValue(node.getDescription().length());
+            for (ColumnWriter columnWriter : colunns) {
+                cell = row.createCell(column++);
+                columnWriter.writeCell(cell, context);
+            }
         }
     }
 }
