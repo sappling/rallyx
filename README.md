@@ -14,6 +14,8 @@ Personally, I like to use mind maps to organize. I have found it useful to
 view the User Stories in this manner, which is what originally prompted
 me to write this.
 
+The "check" output type is also handy to check for common errors in stories.
+
 How To Build
 ------------
 This project include a [gradle](http://gradle.org) build file and wrapper.
@@ -58,7 +60,7 @@ rallyx [-p <propfile>] [-i <id>] [-r <name>] [-f <filename>] [-noproxy] [-type <
  -r,--release <name>        Release (like "some release") - REQUIRED
  -f,--file <filename>       output filename
  -noproxy                   disable proxy use even if env var set
- -type,--type <filetype>    type of output (xmind, excel, word)
+ -type,--type <filetype>    type of output (xmind, excel, check)
  -help                      display help
 ```
 
@@ -92,6 +94,10 @@ Output Formats
  The excel output format should be used with a file name ending in
  .xlsx.  It generates a spreadsheet with the union of all the stories
  from beneath the initiative and the specified release.
+
+#### check
+The check output format creates an excel spreadsheet containing the
+results of a user story error check.
 
 License
 -------
