@@ -16,6 +16,10 @@ me to write this.
 
 The "check" output type is also handy to check for common errors in stories.
 
+Download
+--------
+A zip of the latest released version is [here](releases).
+
 How To Build
 ------------
 This project include a [gradle](http://gradle.org) build file and wrapper.
