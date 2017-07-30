@@ -30,8 +30,8 @@ JAVA_HOME environment variable set.
 Run "gradlew idea" to generate a project for [IntelliJ Idea](https://www.jetbrains.com/idea/).
 Run "gradlew eclipse" to generate a project for [Eclipse](https://eclipse.org/ide/).
 
-Run "gradlew installDist" to build a runnable sample in the build/install/rallyx
-directory.  From that directory you may run the tool using **bin/rallyx**.
+Run "gradlew dist" to build a runnable sample in the build/install/rallyx
+directory and a zip in build/distributions.
 
 Running
 -------
