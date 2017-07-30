@@ -1,15 +1,22 @@
 package org.appling.rallyx;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.rallydev.rest.RallyRestApi;
+import com.rallydev.rest.response.QueryResponse;
 import org.apache.commons.cli.*;
 import org.appling.rallyx.excel.ExcelIssueWriter;
 import org.appling.rallyx.excel.ExcelStoryWriter;
+import org.appling.rallyx.html.HTMLWriter;
 import org.appling.rallyx.rally.*;
 import org.appling.rallyx.reports.ReportWriter;
+import org.appling.rallyx.word.WordWriter;
 import org.appling.rallyx.xmind.XMindWriter;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -26,6 +33,7 @@ public class Main {
     private static final String OPTION_RELEASE = "r";
     private static final String OPTION_TYPE = "t";
     private static final String OPTION_FILE = "f";
+    private static final String OPTION_LIST = "l";
     private static final String OPTION_HELP = "help";
 
     private static final String PROP_APIKEY = "rally_key";
@@ -121,6 +129,24 @@ public class Main {
                 storiesUnderInitiativeList = walker.getStories();
             }
 
+            /*
+            if (line.hasOption(OPTION_LIST)) {
+                QueryResponse response = restApi.query(RallyQueryFactory.getProjects());
+                if (response.wasSuccessful()) {
+                    JsonArray jsonElements = response.getResults();
+                    for (JsonElement element : jsonElements) {
+                        String name = element.getAsJsonObject().get("Name").getAsString();
+                        String state = element.getAsJsonObject().get("State").getAsString();
+                        String description = element.getAsJsonObject().get("Description").getAsString();
+                        JsonElement parentEl = element.getAsJsonObject().get("Parent");
+                        String parentName = parentEl.isJsonNull() ? "" : parentEl.getAsJsonObject().get("Name").getAsString();
+                        int childCount = element.getAsJsonObject().get("Children").getAsJsonObject().get("Count").getAsInt();
+                        System.out.format("%s - %s (%d) : %s\n", state, name, childCount, parentName);
+                    }
+                }
+            }
+            */
+
             // statistics
             StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, initiative);
             stats.printStats();
@@ -132,6 +158,16 @@ public class Main {
                     walker.walk(initiative, null, 1);
                     xwriter.addOrphans(stats.getStoriesNotInInitiative());
                     xwriter.save();
+                } else if (outType.equalsIgnoreCase("html")) {
+                    HTMLWriter htmlWriter = new HTMLWriter(new FileWriter(HTMLWriter.ensureExtention(outName, "Report.html")), stats);
+                    RallyNodeWalker walker = new RallyNodeWalker(htmlWriter);
+                    walker.walk(initiative, Boolean.TRUE, 1);
+                    htmlWriter.close();
+                } else if (outType.equalsIgnoreCase("word")) {
+                    WordWriter wordWriter = new WordWriter(outName, stats);
+                    RallyNodeWalker walker = new RallyNodeWalker(wordWriter);
+                    walker.walk(initiative, Boolean.TRUE, 1);
+                    wordWriter.save();
                 } else if (outType.equalsIgnoreCase("excel")) {
                     ExcelStoryWriter excelStoryWriter = new ExcelStoryWriter(stats);
                     excelStoryWriter.write(outName);
@@ -217,13 +253,14 @@ public class Main {
         options.addOption(Option.builder(OPTION_RELEASE).longOpt(PROP_RELEASE)
                 .desc("Release (like \"some release\") - REQUIRED").numberOfArgs(1)
                 .optionalArg(false).argName("name").build());
-        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, check)")
+        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, word, check)")
                 .numberOfArgs(1).optionalArg(false).argName("filetype").build());
         options.addOption(OPTION_NOPROXY, false, "disable proxy use even if env var set");
         options.addOption(Option.builder(OPTION_FILE).longOpt(PROP_FILE).desc("output filename")
                 .numberOfArgs(1).optionalArg(false).argName("filename").build());
         options.addOption(Option.builder(OPTION_PROPERTIES).longOpt("properties").desc("properties file with options")
                 .numberOfArgs(1).optionalArg(false).argName("propfile").build());
+        // options.addOption(OPTION_LIST, false, "List releases");
         options.addOption(OPTION_HELP, false, "display help");
         return options;
     }

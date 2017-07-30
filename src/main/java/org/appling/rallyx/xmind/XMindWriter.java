@@ -78,7 +78,9 @@ public class XMindWriter implements WalkAction {
             newTopic = workbook.createTopic();
         }
 
-        populateTopic(newTopic, node);
+        if (node != null) {
+            populateTopic(newTopic, node);
+        }
 
         if (parent != null) {
             parent.add(newTopic, ITopic.ATTACHED);

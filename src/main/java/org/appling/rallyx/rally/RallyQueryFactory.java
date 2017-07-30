@@ -18,7 +18,17 @@ public class RallyQueryFactory {
         request.setQueryFilter(new QueryFilter("FormattedID", "=", initiativeID));
 
         //request.setPageSize(1);
-        request.setLimit(1000);
+        request.setLimit(10000);
+
+        return request;
+    }
+
+    public static QueryRequest getProjects() {
+        QueryRequest request = new QueryRequest("Project");
+        request.setFetch(new Fetch("Name", "_ref", "State", "Children", "ObjectID", "Description", "Parent"));
+        request.setScopedDown(true);
+        request.setScopedUp(true);
+        request.setLimit(10000);
 
         return request;
     }
@@ -48,7 +58,7 @@ public class RallyQueryFactory {
         QueryRequest request = new QueryRequest("Release");
         request.setQueryFilter(new QueryFilter("Name", "=", name));
         request.setFetch(new Fetch("Name", "Project", "State", "ObjectID"));
-        request.setLimit(20);
+        request.setLimit(10000);
         request.setScopedDown(true);
         return request;
     }
@@ -58,6 +68,7 @@ public class RallyQueryFactory {
         request.setQueryFilter(new QueryFilter("Release.Name", "=", name));
         request.setFetch(standardFetch);
         request.setOrder("DragAndDropRank ASC");
+        request.setLimit(10000);
         return request;
     }
 }

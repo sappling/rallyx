@@ -64,7 +64,7 @@ rallyx [-p <propfile>] [-i <id>] [-r <name>] [-f <filename>] [-noproxy] [-type <
  -r,--release <name>        Release (like "some release") - REQUIRED
  -f,--file <filename>       output filename
  -noproxy                   disable proxy use even if env var set
- -type,--type <filetype>    type of output (xmind, excel, check)
+ -type,--type <filetype>    type of output (xmind, excel, word, check, html)
  -help                      display help
 ```
 
@@ -98,6 +98,10 @@ Output Formats
  The excel output format should be used with a file name ending in
  .xlsx.  It generates a spreadsheet with the union of all the stories
  from beneath the initiative and the specified release.
+
+#### word
+The word output format creates an MS Word docx file with the contents
+of all the User Stories in hierarchical form.
 
 #### check
 The check output format creates an excel spreadsheet containing the

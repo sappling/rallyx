@@ -17,9 +17,11 @@ public class RallyNodeWalker {
     public void walk(RallyNode node, Object parentNative, int depth) {
         Object newParent = action.act(node, parentNative, depth);
 
-        List<RallyNode> children = node.getChildren();
-        for (RallyNode child : children) {
-            walk(child, newParent, depth+1);
+        if (node != null) {
+            List<RallyNode> children = node.getChildren();
+            for (RallyNode child : children) {
+                walk(child, newParent, depth + 1);
+            }
         }
     }
 }
