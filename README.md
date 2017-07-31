@@ -105,7 +105,16 @@ of all the User Stories in hierarchical form.
 
 #### check
 The check output format creates an excel spreadsheet containing the
-results of a user story error check.
+results of a user story error check.  These checks include:
+
+|Severity  | Description  |
+|----------|--------------|
+| Error    | Story beneath the Initiative, but not in any release |
+| Error    | Story with no estimate |
+| Warning  | In current sprint for > 2 days with no tasks |
+| Warning  | Story with no description |
+| Warning  | Story not assigned to a team (not at a leaf project) |
+| Warning  | Incomplete story in old Sprint ( ended > 2 weeks ago)|
 
 License
 -------
