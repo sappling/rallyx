@@ -37,6 +37,7 @@ public class ExcelStoryWriter {
             new FeatureColumn(),
             new ChildCountColumn(),
             new ProjectColumn(),
+            new PlanEstimateColumn(),
             new TaskEstimateTotalColumn(),
             new DescriptionLengthColumn()
     };
