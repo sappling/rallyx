@@ -34,6 +34,7 @@ public class ExcelIssueWriter extends ExcelStoryWriter {
             new IssueSeverityColumn(),
             new IssueMessageColumn(),
             new ScheduleStateColumn(),
+            new PlanEstimateColumn(),
             new IterationColumn(),
             new FeatureColumn(),
     };

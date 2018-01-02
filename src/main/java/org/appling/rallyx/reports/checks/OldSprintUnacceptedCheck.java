@@ -41,6 +41,10 @@ public class OldSprintUnacceptedCheck implements RallyCheck {
                                 result = new Issue(node, Issue.Severity.Warning, "Story incomplete in old Sprint");
                             }
                         }
+                    } else {
+                        if (scheduleState == ScheduleState.Completed) {
+                            result = new Issue(node, Issue.Severity.Warning, "Story unaccepted, but completed and in no Sprint");
+                        }
                     }
                 }
             }
