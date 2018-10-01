@@ -20,9 +20,14 @@ import java.util.*;
 public class InitiativeNodeFinder {
     private RallyRestApi restApi;
     private ArrayList<RallyNode> stories = new ArrayList<>();
+    private boolean findComplete = true;
 
     public InitiativeNodeFinder(RallyRestApi restApi) {
         this.restApi = restApi;
+    }
+
+    public void setFindComplete(boolean findComplete) {
+        this.findComplete = findComplete;
     }
 
     public RallyNode getInitiativeTree(String initiativeID) throws IOException {
@@ -69,8 +74,10 @@ public class InitiativeNodeFinder {
                         if (next.getType().equals("PortfolioItem/Feature")) {
                             feature = next;
                         }
-                        parentNode.addChild(next);
-                        walk(next, initiative, feature);
+                        if (shouldAddChild(next)) {
+                            parentNode.addChild(next);
+                            walk(next, initiative, feature);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -78,6 +85,20 @@ public class InitiativeNodeFinder {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean shouldAddChild(RallyNode next) {
+        boolean result = true;
+        if (next.isUserStory()) {
+            if (!findComplete) {
+                ScheduleState scheduleState = next.getScheduleState();
+                if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
+                    result = false;
+                }
+            }
+        }
+
+        return result;
     }
 
     public List<RallyNode> getStories() { return stories; }

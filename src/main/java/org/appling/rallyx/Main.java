@@ -35,6 +35,7 @@ public class Main {
     private static final String OPTION_FILE = "f";
     private static final String OPTION_LIST = "l";
     private static final String OPTION_HELP = "help";
+    private static final String OPTION_INCOMPLETE = "incomplete";
 
     private static final String PROP_APIKEY = "rally_key";
     private static final String PROP_PROXYURL = "proxyurl";
@@ -117,6 +118,7 @@ public class Main {
             if (properties.containsKey(PROP_RELEASE)) {
                 String releaseName = properties.getProperty(PROP_RELEASE);
                 UserStoryFinder finder = new UserStoryFinder(restApi);
+                finder.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
                 finder.setRelease(releaseName);
 
                 storiesInReleaseList = finder.getStories();
@@ -125,6 +127,7 @@ public class Main {
             if (properties.containsKey(PROP_INITIATIVE)) {
                 initiativeID = properties.getProperty(PROP_INITIATIVE);
                 InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
+                walker.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
                 initiative = walker.getInitiativeTree(initiativeID);
                 storiesUnderInitiativeList = walker.getStories();
             }
@@ -260,6 +263,7 @@ public class Main {
                 .numberOfArgs(1).optionalArg(false).argName("filename").build());
         options.addOption(Option.builder(OPTION_PROPERTIES).longOpt("properties").desc("properties file with options")
                 .numberOfArgs(1).optionalArg(false).argName("propfile").build());
+        options.addOption(OPTION_INCOMPLETE,false,"Only use incomplete stories");
         // options.addOption(OPTION_LIST, false, "List releases");
         options.addOption(OPTION_HELP, false, "display help");
         return options;

@@ -2,7 +2,7 @@ RallyX
 ======
 
 RallyX is a tool for working with [Rally (or now CA Agile Central)](https://www.ca.com/us/products/ca-agile-central.html).
-RallyX can export information to [XMind](http://www.xmind.net) or MS Excel.
+RallyX can export information to [XMind](http://www.xmind.net), MS Word, or MS Excel.
 I have found that we typically use Rally for development projects organized
 by the Rally Portfolio Items of Initiatives and Features.  So our
 projects are in a hierarchy of Initiative -> Feature -> User Story -> User Story...
@@ -58,13 +58,14 @@ for a description of how to get an API Key.
 #### Command Line Arguments
 
 ```
-rallyx [-p <propfile>] [-i <id>] [-r <name>] [-f <filename>] [-noproxy] [-type <filetype>] [-help]
+rallyx [-p <propfile>] [-i <id>] [-r <name>] [-f <filename>] [-noproxy] [-type <filetype>] [-incomplete] [-help]
  -p,--properties <propfile> properties file with options
  -i,--initiative <id>       Initiative ID (like I203)
  -r,--release <name>        Release (like "some release") - REQUIRED
  -f,--file <filename>       output filename
  -noproxy                   disable proxy use even if env var set
  -type,--type <filetype>    type of output (xmind, excel, word, check, html)
+ -incomplete                Only use incomplete stories
  -help                      display help
 ```
 

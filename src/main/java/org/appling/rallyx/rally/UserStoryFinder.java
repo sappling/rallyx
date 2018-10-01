@@ -18,12 +18,17 @@ import java.util.List;
 public class UserStoryFinder {
     private RallyRestApi restApi;
     private String releaseName;
+    private boolean findComplete = true;
 
     public UserStoryFinder(RallyRestApi restApi) {
         this.restApi = restApi;
     }
 
     public void setRelease(String releaseName) { this.releaseName = releaseName; }
+
+    public void setFindComplete(boolean findComplete) {
+        this.findComplete = findComplete;
+    }
 
     public List<RallyNode> getStories() throws IOException {
         ArrayList<RallyNode> result = new ArrayList<>();
@@ -33,6 +38,12 @@ public class UserStoryFinder {
             JsonArray jsonElements = response.getResults();
             for (JsonElement element : jsonElements) {
                 RallyNode next = new RallyNode(element.getAsJsonObject(), null, null);
+                if (findComplete == false) {
+                    ScheduleState scheduleState = next.getScheduleState();
+                    if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
+                        continue;
+                    }
+                }
                 result.add(next);
             }
         }
