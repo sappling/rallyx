@@ -24,6 +24,7 @@ public class IssueChecker {
         checkers.add(new InSprintNoTaskCheck());
         checkers.add(new UnestimatedStoryCheck());
         checkers.add(new NotAssignedToTeamCheck());
+        checkers.add(new NotInInitiativeCheck());
     }
 
     public List<Issue> doChecks() {

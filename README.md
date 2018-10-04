@@ -116,6 +116,7 @@ results of a user story error check.  These checks include:
 | Warning  | Story with no description |
 | Warning  | Story not assigned to a team (not at a leaf project) |
 | Warning  | Incomplete story in old Sprint ( ended > 2 weeks ago)|
+| Warning  | Story not beneath the Initiative |
 
 License
 -------
