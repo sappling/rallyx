@@ -5,3 +5,4 @@ out/**
 *.ipr
 *.iws
 .gradle/**
+/src/main/java/org/appling/rallyx/miro/MiroTest.java
