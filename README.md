@@ -2,7 +2,8 @@ RallyX
 ======
 
 RallyX is a tool for working with [Rally (or now CA Agile Central)](https://www.ca.com/us/products/ca-agile-central.html).
-RallyX can export information to [XMind](http://www.xmind.net), MS Word, or MS Excel.
+RallyX can export information to [XMind](http://www.xmind.net), MS Word, MS Excel,
+or [Miro](https://miro.com).
 I have found that we typically use Rally for development projects organized
 by the Rally Portfolio Items of Initiatives and Features.  So our
 projects are in a hierarchy of Initiative -> Feature -> User Story -> User Story...
