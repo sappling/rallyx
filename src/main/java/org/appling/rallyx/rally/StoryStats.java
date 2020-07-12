@@ -3,10 +3,7 @@ package org.appling.rallyx.rally;
 import org.appling.rallyx.rally.RallyNode;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +51,20 @@ public class StoryStats {
 
     public Set<RallyNode> getAllStories() {
         return Collections.unmodifiableSet(allStories);
+    }
+
+
+    /**
+     * Gets all nodes (both Features under the Initiative and Stories) with the specified Tag
+     * @return
+     */
+    public Set<RallyNode> getNodesWithTag(String tag) {
+        Set<RallyNode> result = new HashSet<>(  );
+        if (initiative != null) {
+            result.addAll( initiative.getChildren().stream().filter( c -> c.hasTag( tag ) ).collect( Collectors.toSet() ));
+        }
+        result.addAll(getAllStories().stream().filter( c -> c.hasTag( tag ) ).collect( Collectors.toSet()));
+        return result;
     }
 
     public void printStats() {

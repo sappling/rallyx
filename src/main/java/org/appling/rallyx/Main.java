@@ -9,6 +9,7 @@ import org.apache.commons.cli.*;
 import org.appling.rallyx.excel.ExcelIssueWriter;
 import org.appling.rallyx.excel.ExcelStoryWriter;
 import org.appling.rallyx.html.HTMLWriter;
+import org.appling.rallyx.miro.MiroWriter;
 import org.appling.rallyx.rally.*;
 import org.appling.rallyx.reports.ReportWriter;
 import org.appling.rallyx.word.WordWriter;
@@ -20,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,6 +32,7 @@ public class Main {
     public static final String OPTION_PROPERTIES = "p";
     private static final String OPTION_NOPROXY = "noproxy";
     private static final String OPTION_INIT = "i";
+    private static final String OPTION_PROJECT = "project";
     private static final String OPTION_RELEASE = "r";
     private static final String OPTION_TYPE = "t";
     private static final String OPTION_FILE = "f";
@@ -42,9 +45,13 @@ public class Main {
     private static final String PROP_PROXYUSER = "proxyuser";
     private static final String PROP_PROXYPASS = "proxypass";
     private static final String PROP_INITIATIVE = "initiative";
+    private static final String PROP_PROJECT = "project";
     private static final String PROP_RELEASE = "release";
     private static final String PROP_TYPE = "type";
     private static final String PROP_FILE = "file";
+    private static final String PROP_MIRO_TOKEN = "miroToken";
+    private static final String PROP_MIRO_BOARD = "miroBoard";
+    private static final String PROP_MIRO_FRAME = "miroFrame";
 
 
     private static Options options = setupOptions();
@@ -75,6 +82,11 @@ public class Main {
 
         if (properties.containsKey(PROP_TYPE)) {
             outType = properties.getProperty(PROP_TYPE);
+        }
+
+        Optional<String> project = Optional.empty();
+        if (properties.containsKey( PROP_PROJECT )) {
+            project = Optional.of(properties.getProperty( PROP_PROJECT ));
         }
 
 
@@ -120,6 +132,7 @@ public class Main {
                 UserStoryFinder finder = new UserStoryFinder(restApi);
                 finder.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
                 finder.setRelease(releaseName);
+                finder.setProject( project );
 
                 storiesInReleaseList = finder.getStories();
             }
@@ -128,6 +141,7 @@ public class Main {
                 initiativeID = properties.getProperty(PROP_INITIATIVE);
                 InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
                 walker.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
+                walker.setProject( project );
                 initiative = walker.getInitiativeTree(initiativeID);
                 storiesUnderInitiativeList = walker.getStories();
             }
@@ -177,6 +191,12 @@ public class Main {
                 } else if (outType.equalsIgnoreCase("check")) {
                     ExcelIssueWriter issueWriter = new ExcelIssueWriter(stats);
                     issueWriter.write(outName);
+                } else if (outType.equalsIgnoreCase("miro")) {
+                    MiroWriter cardWriter = new MiroWriter(properties.getProperty( PROP_MIRO_TOKEN ),
+                          properties.getProperty( PROP_MIRO_BOARD),
+                          properties.getProperty( PROP_MIRO_FRAME ));
+                    cardWriter.writeMMF(stats);
+                    cardWriter.writeNonMMF(stats);
                 }
             }
         } catch (Exception e) {
@@ -228,6 +248,10 @@ public class Main {
             prop.setProperty(PROP_FILE, line.getOptionValue(OPTION_FILE));
         }
 
+        if (line.hasOption( OPTION_PROJECT )) {
+            prop.setProperty( PROP_PROJECT, line.getOptionValue(OPTION_PROJECT) );
+        }
+
         return prop;
     }
 
@@ -256,13 +280,15 @@ public class Main {
         options.addOption(Option.builder(OPTION_RELEASE).longOpt(PROP_RELEASE)
                 .desc("Release (like \"some release\") - REQUIRED").numberOfArgs(1)
                 .optionalArg(false).argName("name").build());
-        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, word, check)")
+        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, word, check, miro)")
                 .numberOfArgs(1).optionalArg(false).argName("filetype").build());
         options.addOption(OPTION_NOPROXY, false, "disable proxy use even if env var set");
         options.addOption(Option.builder(OPTION_FILE).longOpt(PROP_FILE).desc("output filename")
                 .numberOfArgs(1).optionalArg(false).argName("filename").build());
         options.addOption(Option.builder(OPTION_PROPERTIES).longOpt("properties").desc("properties file with options")
                 .numberOfArgs(1).optionalArg(false).argName("propfile").build());
+        options.addOption(Option.builder(OPTION_PROJECT).desc("only use User Stories in this project")
+              .numberOfArgs(1).optionalArg(false).argName("projectName").build());
         options.addOption(OPTION_INCOMPLETE,false,"Only use incomplete stories");
         // options.addOption(OPTION_LIST, false, "List releases");
         options.addOption(OPTION_HELP, false, "display help");

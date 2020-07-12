@@ -3,12 +3,15 @@ package org.appling.rallyx.rally;
 import com.rallydev.rest.request.QueryRequest;
 import com.rallydev.rest.util.Fetch;
 import com.rallydev.rest.util.QueryFilter;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 /**
  * Created by sappling on 7/19/2017.
  */
 public class RallyQueryFactory {
-    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children", "Feature", "ObjectID", "DragAndDropRank", "Project", "TaskEstimateTotal", "PlanEstimate", "ScheduleState", "Iteration", "StartDate", "EndDate", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories");
+    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children", "Feature", "ObjectID", "DragAndDropRank", "Project", "TaskEstimateTotal", "PlanEstimate", "ScheduleState", "Iteration", "StartDate", "EndDate", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories","Tags");
 
     public static QueryRequest findInitiative(String initiativeID) {
         QueryRequest request = new QueryRequest("PortfolioItem/Initiative");
@@ -63,9 +66,27 @@ public class RallyQueryFactory {
         return request;
     }
 
-    public static QueryRequest findStoriesInRelease(String name) {
+    public static QueryRequest findProject(String name) {
+        QueryRequest request = new QueryRequest( "Project" );
+        request.setQueryFilter(new QueryFilter("Name", "=", name));
+        request.setFetch( new Fetch( "Name", "_ref" ) );
+        request.setLimit(10000);
+        request.setScopedDown(true);
+
+        return request;
+    }
+
+    public static QueryRequest findStoriesInRelease(String name, Optional<String> projectRef) {
         QueryRequest request = new QueryRequest("HierarchicalRequirement");
-        request.setQueryFilter(new QueryFilter("Release.Name", "=", name));
+        request.setScopedDown( true );
+        request.setScopedUp( false );
+        if (projectRef.isPresent()) {
+            request.setProject(projectRef.get());
+        }
+        QueryFilter releaseFilter = new QueryFilter( "Release.Name", "=", name );
+        QueryFilter filter = releaseFilter;
+
+        request.setQueryFilter( filter);
         request.setFetch(standardFetch);
         request.setOrder("DragAndDropRank ASC");
         request.setLimit(10000);

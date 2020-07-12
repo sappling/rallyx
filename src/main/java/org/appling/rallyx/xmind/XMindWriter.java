@@ -127,7 +127,7 @@ public class XMindWriter implements WalkAction {
         }
 
         // mark through any leaf nodes that aren't in release
-        if (!node.hasChildren() && !releaseNodes.contains(node)) {
+        if (!node.hasChildren() && !releaseNodes.isEmpty() && !releaseNodes.contains(node)) {
             newTopic.setStyleId(markthroughStyle.getId());
         }
         return newTopic;

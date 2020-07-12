@@ -2,17 +2,14 @@ package org.appling.rallyx.rally;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.rallydev.rest.RallyRestApi;
 import com.rallydev.rest.request.QueryRequest;
 import com.rallydev.rest.response.QueryResponse;
-import com.rallydev.rest.util.Fetch;
-import com.rallydev.rest.util.QueryFilter;
-import org.appling.rallyx.rally.RallyNode;
-import org.appling.rallyx.rally.RallyQueryFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by sappling on 9/5/2016.
@@ -21,6 +18,7 @@ public class InitiativeNodeFinder {
     private RallyRestApi restApi;
     private ArrayList<RallyNode> stories = new ArrayList<>();
     private boolean findComplete = true;
+    private Optional<String> project = Optional.empty();
 
     public InitiativeNodeFinder(RallyRestApi restApi) {
         this.restApi = restApi;
@@ -28,6 +26,10 @@ public class InitiativeNodeFinder {
 
     public void setFindComplete(boolean findComplete) {
         this.findComplete = findComplete;
+    }
+
+    public void setProject(Optional<String> project) {
+        this.project = project;
     }
 
     public RallyNode getInitiativeTree(String initiativeID) throws IOException {
@@ -93,6 +95,11 @@ public class InitiativeNodeFinder {
             if (!findComplete) {
                 ScheduleState scheduleState = next.getScheduleState();
                 if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
+                    result = false;
+                }
+            }
+            if (project.isPresent()) {
+                if (!next.getProject().getName().equals( project.get() ) ) {
                     result = false;
                 }
             }

@@ -35,6 +35,7 @@ public class ExcelStoryWriter {
             new IterationColumn(),
             new InitiativeColumn(),
             new FeatureColumn(),
+            new TagsColumn(),
             new ChildCountColumn(),
             new ProjectColumn(),
             new PlanEstimateColumn(),

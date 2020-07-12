@@ -7,10 +7,7 @@ import com.rallydev.rest.RallyRestApi;
 import com.rallydev.rest.response.QueryResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by sappling on 7/21/2017.
@@ -19,6 +16,7 @@ public class UserStoryFinder {
     private RallyRestApi restApi;
     private String releaseName;
     private boolean findComplete = true;
+    private Optional<String> project = Optional.empty();
 
     public UserStoryFinder(RallyRestApi restApi) {
         this.restApi = restApi;
@@ -30,10 +28,12 @@ public class UserStoryFinder {
         this.findComplete = findComplete;
     }
 
+    public void setProject(Optional<String> project) { this.project = project; }
+
     public List<RallyNode> getStories() throws IOException {
         ArrayList<RallyNode> result = new ArrayList<>();
 
-        QueryResponse response = restApi.query(RallyQueryFactory.findStoriesInRelease(releaseName));
+        QueryResponse response = restApi.query(RallyQueryFactory.findStoriesInRelease(releaseName, getProjectRef()));
         if (response.wasSuccessful()) {
             JsonArray jsonElements = response.getResults();
             for (JsonElement element : jsonElements) {
@@ -48,5 +48,23 @@ public class UserStoryFinder {
             }
         }
         return result;
+    }
+
+    private Optional<String> getProjectRef() throws IOException
+    {
+        if (project.isPresent()) {
+            String ref = "";
+            QueryResponse response = restApi.query( RallyQueryFactory.findProject( project.get() ) );
+            if (response.wasSuccessful()) {
+                JsonArray results = response.getResults();
+                if (results.size() > 0) {
+                    JsonObject first = results.get( 0 ).getAsJsonObject();
+                    ref = first.get( "_ref" ).getAsString();
+                }
+            }
+            return Optional.of(ref);
+        } else {
+            return project;
+        }
     }
 }

@@ -52,21 +52,22 @@ environment variable in order to run.
 |PROXYUSER     | username of authenticated proxy |
 |PROXYPASS     | password for authenticated proxy |
 
-See [Rally Help](https://help.rallydev.com/rally-application-manager)
+See [Rally Help](https://rally1.rallydev.com/slm/doc/webservice/authentication.jsp)
 for a description of how to get an API Key.
 
 #### Command Line Arguments
 
 ```
-rallyx [-p <propfile>] [-i <id>] [-r <name>] [-f <filename>] [-noproxy] [-type <filetype>] [-incomplete] [-help]
- -p,--properties <propfile> properties file with options
- -i,--initiative <id>       Initiative ID (like I203)
- -r,--release <name>        Release (like "some release") - REQUIRED
- -f,--file <filename>       output filename
- -noproxy                   disable proxy use even if env var set
- -type,--type <filetype>    type of output (xmind, excel, word, check, html)
- -incomplete                Only use incomplete stories
- -help                      display help
+usage: rallyx [-f <filename>] [-help] [-i <id>] [-incomplete] [-noproxy] [-p <propfile>] [-project <projectName>] [-r <name>] [-t <filetype>]
+ -f,--file <filename>         output filename
+ -help                        display help
+ -i,--initiative <id>         Initiative ID (like I203)
+ -incomplete                  Only use incomplete stories
+ -noproxy                     disable proxy use even if env var set
+ -p,--properties <propfile>   properties file with options
+ -project <projectName>       only use User Stories in this project
+ -r,--release <name>          Release (like "some release") - REQUIRED
+ -t,--type <filetype>         type of output (xmind, excel, word, check, miro)
 ```
 
 #### Property Files
@@ -117,6 +118,20 @@ results of a user story error check.  These checks include:
 | Warning  | Story not assigned to a team (not at a leaf project) |
 | Warning  | Incomplete story in old Sprint ( ended > 2 weeks ago)|
 | Warning  | Story not beneath the Initiative |
+
+#### miro
+This output format adds sticky notes and cards into the online whiteboard tool,
+[Miro](https://miro.com).  Currently this is used to support remote PI Planning events
+and works in a manner needed for my use.  Features or User Stories that have the tag "MMF"
+are added as a blue sticky note.  Other user stories are added as a Card.
+
+To use the miro option, you must use a properties file and set 3 properties:
+* miroToken - The OAuth Token to authorize use of the board.  To get this, go to your Miro team's Profile Settings, 
+under the "API, SDK & Embed" tab, and "create an app".  You must specify at least the "boards:write" scope.  The
+"Install app and get OAuth Token" will give you the value for this property.
+* miroFrame - This option adds content inside a Miro frame.  I suggest setting the frame to "grid" mode.  Select the 
+Frame, click the "..." and pick "Copy Link".  It will be formatted like: ```https://miro.com/app/board/<miroBoard>=/?moveToWidget=<miroframe>&cot=13```
+* miroBoard - use the value from the link described above.
 
 License
 -------

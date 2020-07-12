@@ -1,7 +1,9 @@
 package org.appling.rallyx.rally;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,6 +31,9 @@ public class RallyNode {
     private static final String FIELD_PLANESTIMATE = "PlanEstimate";
     private static final String FIELD_ITERATION = "Iteration";
     private static final String FIELD_DESCRIPTION = "Description";
+    private static final String FIELD_TAGS = "Tags";
+    private static final String FIELD_COUNT = "Count";
+    public static final String FIELD_TAGS_NAME_ARRAY = "_tagsNameArray";
 
     private static final String TYPE_US = "HierarchicalRequirement";
 
@@ -218,6 +223,29 @@ public class RallyNode {
         return "https://rally1.rallydev.com/#/detail/"+type+"/"+objid;
     }
 
+    public List<String> getTags(){
+        ArrayList<String> result = new ArrayList<>();
+        JsonElement element = jsonObject.get(FIELD_TAGS);
+        if (element != null && !element.isJsonNull()) {
+            JsonObject jsonObject = element.getAsJsonObject();
+            if (jsonObject.get(FIELD_COUNT).getAsInt() != 0) {
+                JsonArray names = jsonObject.getAsJsonArray( FIELD_TAGS_NAME_ARRAY );
+                for (int i=0; i<names.size(); i++) {
+                    result.add(names.get( i ).getAsJsonObject().get( FIELD_NAME ).getAsString());
+                }
+            }
+        }
+        return result;
+    }
+
+    public String getAllTagsAsString() {
+        List< String > tags = getTags();
+        return StringUtils.join(tags.toArray(),", ");
+    }
+
+    public boolean hasTag(String tag) {
+        return getTags().contains( tag );
+    }
 
     public String toString() {
         return getFormattedId()+": "+getName();

@@ -13,19 +13,21 @@ targetCompatibility = 1.8
 
 mainClassName = 'org.appling.rallyx.Main'
 
-version = '0.9'
+version = '1.0'
 
 dependencies {
-    compile fileTree (dir:"lib", include:'*.*')
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
-    compile group:'com.intellij', name:'annotations', version:'7.0.3'
+    implementation fileTree (dir:"lib", include:'*.*')
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    implementation group:'com.intellij', name:'annotations', version:'7.0.3'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.12'
+    implementation 'org.apache.httpcomponents:fluent-hc:4.5.12'
 
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5'
-    compile group: 'com.rallydev.rest', name: 'rally-rest-api', version: '2.2.1'
-    compile group: 'org.apache.poi', name: 'poi', version: '3.16'
-    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '3.16'
-    compile 'org.docx4j:docx4j:3.3.1'
-    compile 'org.docx4j:docx4j-ImportXHTML:3.3.1'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.2.5'
+    implementation group: 'com.rallydev.rest', name: 'rally-rest-api', version: '2.2.1'
+    implementation group: 'org.apache.poi', name: 'poi', version: '3.16'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.16'
+    implementation 'org.docx4j:docx4j:3.3.1'
+    implementation 'org.docx4j:docx4j-ImportXHTML:3.3.1'
 }
 
 
