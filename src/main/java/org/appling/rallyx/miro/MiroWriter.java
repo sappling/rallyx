@@ -1,6 +1,7 @@
 package org.appling.rallyx.miro;
 
 import org.appling.rallyx.miro.widget.*;
+import org.appling.rallyx.rally.Iteration;
 import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.StoryStats;
 
@@ -27,6 +28,7 @@ public class MiroWriter
          String link = "<A href=\"" + mmf.getURL() + "\">" + mmf.getFormattedId() + "</A> ";
          MiroSticker widget = new MiroSticker( link + mmf.getName() );
          widget.style = new MiroStickerStyle( StickerColors.PASTEL_BLUE);
+         widget.scale = 1.07f;
          connector.addWidget( widget );
       }
    }
@@ -47,6 +49,14 @@ public class MiroWriter
          card.description = description;
          card.style = new MiroCardStyle( "#808080");
          card.addCustomField( new CustomField( (int)nonMMF.getPlanEstimate() + " Points", null ) );
+         Iteration iteration = nonMMF.getIteration();
+         if (iteration != null) {
+            card.addCustomField( new CustomField( iteration.getName(), null ) );
+         }
+         RallyNode feature = nonMMF.getFeature();
+         if (feature != null) {
+            card.addCustomField( new CustomField( feature.getFormattedId(), null ) );
+         }
          connector.addWidget( card );
       }
 
