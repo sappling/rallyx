@@ -11,7 +11,7 @@ public class Project extends RallyNode  {
 
     public Project(JsonObject jsonObject) {
         //todo - need to pull out other subclasses of RallyNode so that I don't need these nulls
-        super(jsonObject, null, null);
+        super(jsonObject, null, null, null );
     }
 
     @Override

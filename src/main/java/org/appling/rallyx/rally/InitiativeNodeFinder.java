@@ -39,15 +39,15 @@ public class InitiativeNodeFinder {
         if (queryResponse.wasSuccessful()) {
             JsonArray resultArray = queryResponse.getResults();
             JsonElement jsonInitiative = resultArray.get(0);
-            RallyNode node = new RallyNode(jsonInitiative.getAsJsonObject(), null, null);
-            walk(node, node, null);
+            RallyNode node = new RallyNode(jsonInitiative.getAsJsonObject(), null, null, null );
+            walk(node, node, null, null );
             return node;
         } else {
             throw new IOException("Error retrieving initiative '"+initiativeID+"'");
         }
     }
 
-    public void walk(RallyNode parentNode, RallyNode initiative, RallyNode feature)  {
+    public void walk( RallyNode parentNode, RallyNode initiative, RallyNode feature, RallyNode mmf )  {
         //WalkAction action,
         //parentNative = action.act(rallyObject, parentNative, depth);
 
@@ -72,13 +72,17 @@ public class InitiativeNodeFinder {
                 if (response.wasSuccessful()) {
                     JsonArray jsonArray = response.getResults();
                     for (JsonElement jsonEl : jsonArray) {
-                        RallyNode next = new RallyNode(jsonEl.getAsJsonObject(), initiative, feature);
+                        RallyNode next = new RallyNode(jsonEl.getAsJsonObject(), initiative, feature, mmf );
                         if (next.getType().equals("PortfolioItem/Feature")) {
                             feature = next;
                         }
                         if (shouldAddChild(next)) {
+                            RallyNode parentMMf = null;
+                            if (next.hasTag( Tags.MMF )) {
+                                parentMMf = next;
+                            }
                             parentNode.addChild(next);
-                            walk(next, initiative, feature);
+                            walk(next, initiative, feature, parentMMf );
                         }
                     }
                 }
@@ -91,17 +95,17 @@ public class InitiativeNodeFinder {
 
     private boolean shouldAddChild(RallyNode next) {
         boolean result = true;
-        if (next.isUserStory()) {
-            if (!findComplete) {
-                ScheduleState scheduleState = next.getScheduleState();
-                if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
-                    result = false;
-                }
+//        if (next.isUserStory()) {
+//        }
+        if (!findComplete) {
+            ScheduleState scheduleState = next.getScheduleState();
+            if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
+                result = false;
             }
-            if (project.isPresent()) {
-                if (!next.getProject().getName().equals( project.get() ) ) {
-                    result = false;
-                }
+        }
+        if (project.isPresent()) {
+            if (!next.getProject().getName().equals( project.get() ) ) {
+                result = false;
             }
         }
 

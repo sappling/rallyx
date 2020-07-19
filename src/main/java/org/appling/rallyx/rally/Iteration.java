@@ -1,12 +1,8 @@
 package org.appling.rallyx.rally;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -18,7 +14,7 @@ public class Iteration extends RallyNode {
 
     public Iteration(JsonObject jsonObject) {
         //todo - need to pull out other subclasses of RallyNode so that I don't need these nulls
-        super(jsonObject, null, null);
+        super(jsonObject, null, null, null );
     }
 
 

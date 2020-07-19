@@ -36,6 +36,8 @@ public class RallyNode {
     public static final String FIELD_TAGS_NAME_ARRAY = "_tagsNameArray";
 
     private static final String TYPE_US = "HierarchicalRequirement";
+    private static final String TYPE_FEATURE = "PortfolioItem/Feature";
+    private static final String TYPE_INITIATIVE = "PortfolioItem/Initiative";
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
@@ -44,11 +46,13 @@ public class RallyNode {
     private final String id;
     private final RallyNode initiative;
     private final RallyNode feature;
+    private final RallyNode mmf;
 
-    public RallyNode(JsonObject jsonObject, RallyNode initiative, RallyNode feature) {
+    public RallyNode( JsonObject jsonObject, RallyNode initiative, RallyNode feature, RallyNode mmf ) {
         this.jsonObject = jsonObject;
         this.initiative = initiative;
         this.feature = feature;
+        this.mmf = mmf;
         id = getStringField(FIELD_OBJID);
         children = new ArrayList<>();
     }
@@ -98,7 +102,6 @@ public class RallyNode {
             }
         }
         return result;
-
     }
 
     @NotNull
@@ -169,6 +172,9 @@ public class RallyNode {
     @Nullable
     public RallyNode getFeature() { return feature; }
 
+    @Nullable
+    public RallyNode getMmf() { return mmf; }
+
     @NotNull
     public String getFeatureName() {
         String result = "";
@@ -211,6 +217,14 @@ public class RallyNode {
 
     public boolean isUserStory() {
         return TYPE_US.equals(getType());
+    }
+
+    public boolean isFeature() {
+        return TYPE_FEATURE.equals(getType());
+    }
+
+    public boolean isInitiative() {
+        return TYPE_INITIATIVE.equals( getType() );
     }
 
     public String getURL() {

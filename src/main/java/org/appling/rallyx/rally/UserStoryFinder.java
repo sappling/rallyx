@@ -37,7 +37,7 @@ public class UserStoryFinder {
         if (response.wasSuccessful()) {
             JsonArray jsonElements = response.getResults();
             for (JsonElement element : jsonElements) {
-                RallyNode next = new RallyNode(element.getAsJsonObject(), null, null);
+                RallyNode next = new RallyNode(element.getAsJsonObject(), null, null, null );
                 if (findComplete == false) {
                     ScheduleState scheduleState = next.getScheduleState();
                     if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {

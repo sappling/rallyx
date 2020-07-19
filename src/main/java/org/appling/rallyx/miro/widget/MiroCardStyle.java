@@ -10,4 +10,12 @@ public class MiroCardStyle
    public MiroCardStyle( String backgroundColor) {
       this.backgroundColor = backgroundColor;
    }
+
+   @Override
+   public String toString()
+   {
+      return "MiroCardStyle{" +
+            "backgroundColor='" + backgroundColor + '\'' +
+            '}';
+   }
 }

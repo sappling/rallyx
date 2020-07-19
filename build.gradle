@@ -8,8 +8,8 @@ repositories {
 }
 
 //java version:
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.9
+targetCompatibility = 1.9
 
 mainClassName = 'org.appling.rallyx.Main'
 
