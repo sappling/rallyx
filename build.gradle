@@ -13,7 +13,7 @@ targetCompatibility = 1.9
 
 mainClassName = 'org.appling.rallyx.Main'
 
-version = '1.1'
+version = '1.2'
 
 dependencies {
     implementation fileTree (dir:"lib", include:'*.*')
