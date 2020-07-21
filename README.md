@@ -127,12 +127,16 @@ and works in a manner needed for my use.  Features or User Stories that have the
 are added as a blue sticky note.  Other user stories are added as a Card.
 
 To use the miro option, you must use a properties file and set 3 properties:
-* miroToken - The OAuth Token to authorize use of the board.  To get this, go to your Miro team's Profile Settings, 
-under the "API, SDK & Embed" tab, and "create an app".  You must specify at least the "boards:write" scope.  The
-"Install app and get OAuth Token" will give you the value for this property.
-* miroFrame - This option adds content inside a Miro frame.  I suggest setting the frame to "grid" mode.  Select the 
-Frame, click the "..." and pick "Copy Link".  It will be formatted like: ```https://miro.com/app/board/<miroBoard>=/?moveToWidget=<miroframe>&cot=13```
-* miroBoard - use the value from the link described above.
+* miro.token - The OAuth Token to authorize use of the board.  While I have created an app to do this, I have not yet
+published it on the Miro Marketplace.  To use this, you will have to create your own app.  You can go to your 
+Miro team's Profile Settings, under the "API, SDK & Embed" tab, and "create an app".  
+You must specify at least the "boards:write" scope.  You must use an OAuth 2.0 flow to get a token.  Development
+instructions are [here](https://developers.miro.com/reference#authorization-and-authentication).  I have
+a Java Web App that will support this, but it is not yet published as Open Source (hopefully coming soon).
+
+* miro.link - This option adds content inside a Miro frame.  Select theFrame, click the "..." and pick "Copy Link".   
+It will be formatted like: ```https://miro.com/app/board/<miroBoard>=/?moveToWidget=<miroframe>&cot=13```
+
 
 License
 -------

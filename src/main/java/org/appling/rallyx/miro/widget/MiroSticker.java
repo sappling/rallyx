@@ -4,6 +4,7 @@ public class MiroSticker extends MiroWidget
 {
    private transient float defaultWidth = 199f;
    private transient float defaultHeight = 228f;
+   private transient boolean isFeature = true;
 
    public Float scale = null;
    public String text = "";
@@ -22,6 +23,16 @@ public class MiroSticker extends MiroWidget
    @Override
    public double getRealHeight() {
       return (height == null ? defaultHeight : height) * scale;
+   }
+
+   public void setFeature( boolean feature )
+   {
+      isFeature = feature;
+   }
+
+   public boolean isFeature()
+   {
+      return isFeature;
    }
 
    @Override

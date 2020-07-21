@@ -13,7 +13,7 @@ targetCompatibility = 1.9
 
 mainClassName = 'org.appling.rallyx.Main'
 
-version = '1.0'
+version = '1.1'
 
 dependencies {
     implementation fileTree (dir:"lib", include:'*.*')
@@ -28,6 +28,7 @@ dependencies {
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '3.16'
     implementation 'org.docx4j:docx4j:3.3.1'
     implementation 'org.docx4j:docx4j-ImportXHTML:3.3.1'
+    //implementation group: 'org.fusesource.jansi', name: 'jansi', version: '1.18'
 }
 
 

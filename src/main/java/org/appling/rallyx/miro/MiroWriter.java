@@ -50,7 +50,7 @@ public class MiroWriter
          if ( "frame".equalsIgnoreCase( target.getType() ) )
          {
             //connector.setTargetFrame( targetId );
-            currentY = target.getTop() + ySpacing;
+            currentY = target.getTop() + (4*ySpacing);
             currentX = target.getLeft() + xSpacing;
          } else {
             currentX = target.x;
@@ -109,6 +109,7 @@ public class MiroWriter
       {
          MiroSticker widget = new MiroSticker( "Parent Not in Project" );
          widget.style = new MiroStickerStyle( StickerColors.RED );
+         widget.setFeature( true );
          widget.scale = 1.07f;
          updateWidgetPosition( widget );
          connector.addWidget( widget );
@@ -166,8 +167,7 @@ public class MiroWriter
    private void updateWidgetPosition(MiroWidget widget) {
       if ("sticker".equalsIgnoreCase( widget.getType())) {
          MiroSticker sticker = (MiroSticker) widget;
-         if (sticker.style.backgroundColor.equals( StickerColors.GREEN ) ||
-               sticker.style.backgroundColor.equals( StickerColors.RED )) { // Feature or Not In Initiative
+         if (sticker.isFeature()) { // Feature or Not In Initiative
             currentY = target.getTop() + ySpacing;
          } else if (sticker.style.backgroundColor.equals( StickerColors.PASTEL_BLUE )) { // MMF
             currentY = target.getTop() + (ySpacing * 2) + sticker.getRealHeight();
@@ -185,6 +185,7 @@ public class MiroWriter
    {
       MiroSticker widget = new MiroSticker( getLinkToNode( mmf ) + mmf.getName() );
       widget.style = new MiroStickerStyle( StickerColors.PASTEL_BLUE );
+      widget.setFeature( mmf.isFeature());
       widget.scale = 1.07f;
 
       updateWidgetPosition(widget);
@@ -195,6 +196,7 @@ public class MiroWriter
    {
       MiroSticker widget = new MiroSticker( getLinkToNode( feature ) + feature.getName() );
       widget.style = new MiroStickerStyle( StickerColors.GREEN  );
+      widget.setFeature( true );
       widget.scale = 1.07f;
       updateWidgetPosition(widget);
       connector.addWidget( widget );

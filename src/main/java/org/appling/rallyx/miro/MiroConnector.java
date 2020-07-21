@@ -99,18 +99,27 @@ public class MiroConnector
       String limitRemaining = getHeaderValue( httpResponse, "X-RateLimit-Remaining" );
       String limitReset = getHeaderValue( httpResponse, "X-RateLimit-Reset" );
 
-      long remaining = Long.parseLong( limitRemaining );
+      if (!limitRemaining.isEmpty() && !limitReset.isEmpty())
+      {
+         long remaining = Long.parseLong( limitRemaining );
 
-      if (remaining < 200) {
-         Date resetTime = new Date(Long.parseLong( limitReset )*1000L);
-         for (Date now = new Date(); now.getTime() < resetTime.getTime(); now = new Date(  )) {
-            long remainingTime = resetTime.getTime() - now.getTime();
-            if (remainingTime > 0) {
-               System.out.printf( "Rate limit reached.  Pausing for %d more seconds.\n", remainingTime/1000 );
-               try
+         if ( remaining < 200 )
+         {
+            Date resetTime = new Date( Long.parseLong( limitReset ) * 1000L );
+            for ( Date now = new Date(); now.getTime() < resetTime.getTime(); now = new Date() )
+            {
+               long remainingTime = resetTime.getTime() - now.getTime();
+               if ( remainingTime > 0 )
                {
-                  Thread.sleep( 5000 );
-               } catch ( InterruptedException e ) {  } // intentionally ignore
+                  //Update to show progress on a single line like: u"\u001b[1000D" + str(i + 1) + "%"
+                  System.out.printf( "Rate limit reached.  Pausing for %d more seconds.\n", remainingTime / 1000 );
+                  try
+                  {
+                     Thread.sleep( 5000 );
+                  } catch ( InterruptedException e )
+                  {
+                  } // intentionally ignore
+               }
             }
          }
       }
