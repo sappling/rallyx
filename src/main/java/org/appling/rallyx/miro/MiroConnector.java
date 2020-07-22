@@ -105,7 +105,7 @@ public class MiroConnector
 
          if ( remaining < 200 )
          {
-            Date resetTime = new Date( Long.parseLong( limitReset ) * 1000L );
+            Date resetTime = new Date( Long.parseLong( limitReset+2 ) * 1000L );
             for ( Date now = new Date(); now.getTime() < resetTime.getTime(); now = new Date() )
             {
                long remainingTime = resetTime.getTime() - now.getTime();
