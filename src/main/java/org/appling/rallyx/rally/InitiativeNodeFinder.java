@@ -19,6 +19,7 @@ public class InitiativeNodeFinder {
     private ArrayList<RallyNode> stories = new ArrayList<>();
     private boolean findComplete = true;
     private Optional<String> project = Optional.empty();
+    private boolean includeNodesOutOfProject = true;
 
     public InitiativeNodeFinder(RallyRestApi restApi) {
         this.restApi = restApi;
@@ -28,8 +29,9 @@ public class InitiativeNodeFinder {
         this.findComplete = findComplete;
     }
 
-    public void setProject(Optional<String> project) {
+    public void setProject(Optional<String> project, boolean includeNodesOutOfProject) {
         this.project = project;
+        this.includeNodesOutOfProject = includeNodesOutOfProject;
     }
 
     public RallyNode getInitiativeTree(String initiativeID) throws IOException {
@@ -105,7 +107,11 @@ public class InitiativeNodeFinder {
         }
         if (project.isPresent()) {
             if (!next.getProject().getName().equals( project.get() ) ) {
-                result = false;
+                if (includeNodesOutOfProject) {
+                    next.setOutOfProject( true );
+                } else  {
+                    result = false;
+                }
             }
         }
 

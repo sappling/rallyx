@@ -107,7 +107,7 @@ public class MiroWriter
 
       if (!storiesNotInInitiative.isEmpty())
       {
-         MiroSticker widget = new MiroSticker( "Parent Not in Project" );
+         MiroSticker widget = new MiroSticker( "Not In Initiative" );
          widget.style = new MiroStickerStyle( StickerColors.RED );
          widget.setFeature( true );
          widget.scale = 1.07f;
@@ -150,7 +150,9 @@ public class MiroWriter
          }
       }
       else if (node.isFeature()) {
-         writeNonMMFFeature( node );
+         if (shouldAddNode(node)) {
+            writeNonMMFFeature(node);
+         }
       } else if (node.isUserStory()) {
          if (shouldAddNode( node )) {
             boolean inRelease = stats.getStoriesInRelease().contains( node );
@@ -173,6 +175,10 @@ public class MiroWriter
             !cardFields.isShowNotInRelease() &&
             !stats.getStoriesInRelease().contains( node )) {
          result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
+      } else if (node.isOutOfProject()) {
+         if (!node.hasDescendentsInProject()) {
+            result = false;
+         }
       }
       return result;
    }
@@ -206,7 +212,11 @@ public class MiroWriter
 
    private void writeMMF( RallyNode mmf) throws IOException
    {
-      MiroSticker widget = new MiroSticker( getLinkToNode( mmf ) + mmf.getName() );
+      String text = getLinkToNode( mmf ) + mmf.getName();
+      if (mmf.isOutOfProject()) {
+         text += " <span style=\"color:red\">NIP</span>";      // Decided on NIP for Not In Project
+      }
+      MiroSticker widget = new MiroSticker( text );
       widget.style = new MiroStickerStyle( StickerColors.PASTEL_BLUE );
       widget.setFeature( mmf.isFeature());
       widget.scale = 1.07f;

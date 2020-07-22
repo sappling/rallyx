@@ -141,7 +141,7 @@ public class Main {
                 initiativeID = properties.getProperty(PROP_INITIATIVE);
                 InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
                 walker.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
-                walker.setProject( project );
+                walker.setProject( project, true);  // Todo - add an option for includeNodesOutOfProject
                 initiative = walker.getInitiativeTree(initiativeID);
                 storiesUnderInitiativeList = walker.getStories();
             }

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public class StoryStats {
     private Set<RallyNode> storiesInRelease = new HashSet<>();
     private Set<RallyNode> storiesUnderInitiative = new HashSet<>();
+    private Set<RallyNode> storiesNotInProject = new HashSet<>();
     private Set<RallyNode> storiesNotInInitiative = new HashSet<>();
     private Set<RallyNode> storiesNotInRelease = new HashSet<>();
     private Set<RallyNode> storiesInNoRelease = new HashSet<>();
@@ -51,6 +52,10 @@ public class StoryStats {
         return Collections.unmodifiableSet(storiesNotInInitiative);
     }
 
+    public Set<RallyNode> getStoriesNotInProject() {
+        return Collections.unmodifiableSet(storiesNotInProject);
+    }
+
     public Set<RallyNode> getStoriesNotInRelease() {
         return Collections.unmodifiableSet(storiesNotInRelease);
     }
@@ -58,7 +63,6 @@ public class StoryStats {
     public Set<RallyNode> getAllStories() {
         return Collections.unmodifiableSet(allStories);
     }
-
 
     /**
      * Gets all nodes (both Features under the Initiative and Stories) with the specified Tag
@@ -74,7 +78,11 @@ public class StoryStats {
     }
 
     public void printStats() {
+        int totalStoriesNotInProject = getStoriesNotInProject().size();
         System.out.format("%d stories total\n", allStories.size());
+        if (totalStoriesNotInProject > 0) {
+            System.out.format("%d stories were in the project and %d were not\n", allStories.size() - totalStoriesNotInProject, totalStoriesNotInProject);
+        }
         System.out.format("%d stories not in initiative\n", storiesNotInInitiative.size());
         System.out.format("%d stories not in specified release\n", storiesNotInRelease.size());
         System.out.format("%d stories in no release\n", storiesInNoRelease.size());
@@ -84,6 +92,9 @@ public class StoryStats {
         // find all stories in the release that are not in the initiative
         storiesNotInInitiative = new HashSet<>(storiesInRelease);
         storiesNotInInitiative.removeAll(storiesUnderInitiative);
+
+        // If the InitiativeNodeFinder was set to includeNodesOutOfProject, then we may need to know which nodes are out of the project
+        storiesNotInProject.addAll(storiesUnderInitiative.stream().filter(RallyNode::isOutOfProject).collect(Collectors.toSet()) );
 
         // find all stories in the initiative that are not in the release
         storiesNotInRelease = new HashSet<>(storiesUnderInitiative);
