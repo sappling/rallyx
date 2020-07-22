@@ -107,4 +107,34 @@ public class CardFields
       }
 
    }
+
+   public boolean isShowSize()
+   {
+      return showSize;
+   }
+
+   public boolean isShowIteration()
+   {
+      return showIteration;
+   }
+
+   public boolean isShowFeature()
+   {
+      return showFeature;
+   }
+
+   public boolean isShowMMF()
+   {
+      return showMMF;
+   }
+
+   public boolean isShowTeam()
+   {
+      return showTeam;
+   }
+
+   public boolean isShowNotInRelease()
+   {
+      return showNotInRelease;
+   }
 }

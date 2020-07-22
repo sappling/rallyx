@@ -37,6 +37,12 @@ public class StoryStats {
         return Collections.unmodifiableSet(storiesInRelease);
     }
 
+    /**
+     *
+     * @return true if a release was specified when searching for stories
+     */
+    public boolean getReleaseSpecified() { return storiesInRelease != null; }
+
     public Set<RallyNode> getStoriesUnderInitiative() {
         return Collections.unmodifiableSet(storiesUnderInitiative);
     }

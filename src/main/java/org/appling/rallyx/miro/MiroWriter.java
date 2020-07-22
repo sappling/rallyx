@@ -145,15 +145,38 @@ public class MiroWriter
    {
       if (node.isInitiative()) {} // intentionally ignore
       else if (node.hasTag( Tags.MMF )) {
-         writeMMF( node );
+         if (shouldAddNode( node )) {
+            writeMMF( node );
+         }
       }
       else if (node.isFeature()) {
          writeNonMMFFeature( node );
       } else if (node.isUserStory()) {
-         boolean inRelease = stats.getStoriesInRelease().contains( node );
-         writeNonMMFStory( node, inRelease );
+         if (shouldAddNode( node )) {
+            boolean inRelease = stats.getStoriesInRelease().contains( node );
+            writeNonMMFStory( node, inRelease );
+         }
       }
    }
+
+   /**
+    * When walking the tree of initiatives, we will get nodes that are not in the specified release
+    * If the cardFields option to highlight things not in the release is selected, then we want
+    * to add it, otherwise, we shouldn't.
+    * @param node
+    * @return true if this node should be handled
+    */
+   private boolean shouldAddNode(RallyNode node) {
+      boolean result = true;
+      if (node.isUserStory() &&
+            stats.getReleaseSpecified() &&
+            !cardFields.isShowNotInRelease() &&
+            !stats.getStoriesInRelease().contains( node )) {
+         result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
+      }
+      return result;
+   }
+
 
    private void writeRemainingMMFStories(ArrayList<RallyNode> mmfStories ) throws IOException
    {
