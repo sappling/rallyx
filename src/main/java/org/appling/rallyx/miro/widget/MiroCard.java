@@ -3,7 +3,7 @@ package org.appling.rallyx.miro.widget;
 public class MiroCard extends MiroWidget
 {
    private static final transient float defaultWidth = 320f;
-   private static final transient float defaultHeight = 120f;
+   private static final transient float defaultHeight = 100f;  // was 120
 
    public float scale = 1f;
    public String title = "";
@@ -35,7 +35,9 @@ public class MiroCard extends MiroWidget
    }
 
    public double getRealHeight() {
-      return (height == null ? defaultHeight : height) * scale;
+
+      double textHeight  = ((title.length() / 44) +1)* 10;
+      return ((height == null ? defaultHeight : height) + textHeight )* scale;
    }
 
 

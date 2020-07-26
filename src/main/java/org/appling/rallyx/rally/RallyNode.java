@@ -3,10 +3,13 @@ package org.appling.rallyx.rally;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.rallydev.rest.RallyRestApi;
+import com.rallydev.rest.response.QueryResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ public class RallyNode {
    private static final String FIELD_TYPE = "_type";
    private static final String FIELD_FMT_ID = "FormattedID";
    static final String FIELD_NAME = "Name";
+   private static final String FIELD_STATE = "State";    // for Defects
    private static final String FIELD_SSTATE = "ScheduleState";
    private static final String FIELD_OBJID = "ObjectID";
    private static final String FIELD_CHILDCOUNT = "DirectChildrenCount";
@@ -38,11 +42,13 @@ public class RallyNode {
    private static final String TYPE_US = "HierarchicalRequirement";
    private static final String TYPE_FEATURE = "PortfolioItem/Feature";
    private static final String TYPE_INITIATIVE = "PortfolioItem/Initiative";
+   private static final String TYPE_DEFECT = "Defect";
 
    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
    private final JsonObject jsonObject;
    private final ArrayList<RallyNode> children;
+   private final ArrayList<RallyNode> defects;
    private final String id;
    private final RallyNode initiative;
    private final RallyNode feature;
@@ -56,6 +62,7 @@ public class RallyNode {
       this.mmf = mmf;
       id = getStringField(FIELD_OBJID);
       children = new ArrayList<>();
+      defects = new ArrayList<>();
    }
 
    @NotNull
@@ -205,6 +212,15 @@ public class RallyNode {
       return getStringField(FIELD_SSTATE);
    }
 
+   public DefectState getDefectState() {
+      DefectState result = DefectState.Unknown;
+      String stateString = getStringField(FIELD_STATE);
+      if (stateString.length() > 0) {
+         result = DefectState.fromString(stateString);
+      }
+      return result;
+   }
+
    @Nullable
    public ScheduleState getScheduleState() {
       ScheduleState result = null;
@@ -277,6 +293,28 @@ public class RallyNode {
 
    public boolean isInitiative() {
       return TYPE_INITIATIVE.equals(getType());
+   }
+
+   public boolean isDefect() {
+      return TYPE_DEFECT.equals(getType());
+   }
+
+   public int getNumberOfDefects() {
+      int result = 0;
+      JsonObject defectsObject = jsonObject.getAsJsonObject("Defects");
+      if (defectsObject != null) {
+         result = defectsObject.getAsJsonPrimitive("Count").getAsInt();
+      }
+
+      return result;
+   }
+
+   public List<RallyNode> getDefects() throws IOException {
+      return Collections.unmodifiableList(defects);
+   }
+
+   public void addDefect(RallyNode defect) {
+      defects.add(defect);
    }
 
    public String getURL() {

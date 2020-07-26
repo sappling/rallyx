@@ -12,20 +12,31 @@ import java.util.stream.Collectors;
 public class StoryStats {
     private Set<RallyNode> storiesInRelease = new HashSet<>();
     private Set<RallyNode> storiesUnderInitiative = new HashSet<>();
+    private Set<RallyNode> defectsInRelease = new HashSet<>();
+    private Set<RallyNode> defectsUnderInitiative = new HashSet<>();
     private Set<RallyNode> storiesNotInProject = new HashSet<>();
     private Set<RallyNode> storiesNotInInitiative = new HashSet<>();
+    private Set<RallyNode> defectsNotInInitiative = new HashSet<>();
     private Set<RallyNode> storiesNotInRelease = new HashSet<>();
     private Set<RallyNode> storiesInNoRelease = new HashSet<>();
     private Set<RallyNode> allStories = new HashSet<>();
+    private Set<RallyNode> allDefects = new HashSet<>();
+
     private RallyNode initiative;
 
-    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, RallyNode initiative) {
+    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, @Nullable List<RallyNode> defectsInReleaseList, @Nullable List<RallyNode> defectsUnderInitiativeList, RallyNode initiative) {
         this.initiative = initiative;
         if (storiesInReleaseList != null) {
             storiesInRelease = new HashSet<>(storiesInReleaseList);
         }
         if (storiesUnderInitiativeList != null) {
             storiesUnderInitiative = new HashSet<>(storiesUnderInitiativeList);
+        }
+        if (defectsInReleaseList != null) {
+            defectsInRelease = new HashSet<>(defectsInReleaseList);
+        }
+        if (defectsUnderInitiativeList != null) {
+            defectsUnderInitiative = new HashSet<>(defectsUnderInitiativeList);
         }
         calculateSets();
     }
@@ -64,6 +75,20 @@ public class StoryStats {
         return Collections.unmodifiableSet(allStories);
     }
 
+    public Set<RallyNode> getDefectsUnderInitiative() {
+        return Collections.unmodifiableSet(defectsUnderInitiative);
+    }
+    public Set<RallyNode> getDefectsInRelease() {
+        return Collections.unmodifiableSet(defectsInRelease);
+    }
+    public Set<RallyNode> getDefectsNotInInitiative() {
+        return Collections.unmodifiableSet(defectsNotInInitiative);
+    }
+    public Set<RallyNode> getAllDefects() {
+        return Collections.unmodifiableSet(allDefects);
+    }
+
+
     /**
      * Gets all nodes (both Features under the Initiative and Stories) with the specified Tag
      * @return
@@ -86,6 +111,7 @@ public class StoryStats {
         System.out.format("%d stories not in initiative\n", storiesNotInInitiative.size());
         System.out.format("%d stories not in specified release\n", storiesNotInRelease.size());
         System.out.format("%d stories in no release\n", storiesInNoRelease.size());
+        System.out.format("%d defects in total\n", allDefects.size());
     }
 
     private void calculateSets() {
@@ -110,6 +136,11 @@ public class StoryStats {
         allStories = new HashSet<>(storiesUnderInitiative);
         allStories.addAll(storiesNotInInitiative);
 
+        defectsNotInInitiative = new HashSet<>(defectsInRelease);
+        defectsNotInInitiative.removeAll(defectsUnderInitiative);
+
+        allDefects = new HashSet<>(defectsUnderInitiative);
+        allDefects.addAll(defectsNotInInitiative);
     }
 
     private static Set<RallyNode> removeParents(Set<RallyNode> set) {

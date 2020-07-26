@@ -109,8 +109,10 @@ public class Main {
         }
 
         List<RallyNode> storiesInReleaseList = null;
+        List<RallyNode> defectsInReleaseList = null;
         RallyNode initiative = null;
         List<RallyNode> storiesUnderInitiativeList = null;
+        List<RallyNode> defectsUnderInitiativeList = null;
 
         boolean useProxy = (proxy_url != null);
         if (line.hasOption(OPTION_NOPROXY)) {
@@ -130,20 +132,22 @@ public class Main {
             if (properties.containsKey(PROP_RELEASE)) {
                 String releaseName = properties.getProperty(PROP_RELEASE);
                 UserStoryFinder finder = new UserStoryFinder(restApi);
-                finder.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
+                finder.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
                 finder.setRelease(releaseName);
                 finder.setProject( project );
 
                 storiesInReleaseList = finder.getStories();
+                defectsInReleaseList = finder.getDefects();
             }
 
             if (properties.containsKey(PROP_INITIATIVE)) {
                 initiativeID = properties.getProperty(PROP_INITIATIVE);
                 InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
-                walker.setFindComplete(!line.hasOption(OPTION_INCOMPLETE));
+                walker.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
                 walker.setProject( project, true);  // Todo - add an option for includeNodesOutOfProject
                 initiative = walker.getInitiativeTree(initiativeID);
                 storiesUnderInitiativeList = walker.getStories();
+                defectsUnderInitiativeList = walker.getDefects();
             }
 
             /*
@@ -165,7 +169,7 @@ public class Main {
             */
 
             // statistics
-            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, initiative);
+            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList, initiative);
             stats.printStats();
 
             if (outType != null) {
@@ -314,7 +318,7 @@ public class Main {
                 .numberOfArgs(1).optionalArg(false).argName("propfile").build());
         options.addOption(Option.builder(OPTION_PROJECT).desc("only use User Stories in this project")
               .numberOfArgs(1).optionalArg(false).argName("projectName").build());
-        options.addOption(OPTION_INCOMPLETE,false,"Only use incomplete stories");
+        options.addOption(OPTION_INCOMPLETE,false,"Only use incomplete stories and defects");
         // options.addOption(OPTION_LIST, false, "List releases");
         options.addOption(OPTION_HELP, false, "display help");
         return options;

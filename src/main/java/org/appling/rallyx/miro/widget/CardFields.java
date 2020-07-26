@@ -56,6 +56,10 @@ public class CardFields
 
    public void addFieldsToCard( MiroCard card, RallyNode node )
    {
+      if (node.isDefect()) {
+         card.addCustomField(new CustomField("Defect", "https://cdn.imgbin.com/3/0/15/imgbin-software-bug-bug-WQF2cN5hSmKNTvrwr1aRKEEBf.jpg"));
+
+      }
       if (showSize)
       {
          int points = (int) node.getPlanEstimate();
@@ -101,7 +105,7 @@ public class CardFields
       {
          if ( !card.isInRelease() )
          {
-            card.addCustomField( new CustomField( "NIR", "https://www.pikpng.com/pngl/m/98-988476_clipart-no-sign-x-red-circle-with-line.png" ) );
+            card.addCustomField( new CustomField( "NIR", ""));
             card.style = new MiroCardStyle( "#E00000" );
          }
       }

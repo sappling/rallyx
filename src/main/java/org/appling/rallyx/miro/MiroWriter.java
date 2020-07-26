@@ -104,20 +104,24 @@ public class MiroWriter
 
       walk( stats.getInitiative());
       Set< RallyNode > storiesNotInInitiative = stats.getStoriesNotInInitiative();
+      Set<RallyNode> defectsNotInInitiative = stats.getDefectsNotInInitiative();
 
-      if (!storiesNotInInitiative.isEmpty())
-      {
-         MiroSticker widget = new MiroSticker( "Not In Initiative" );
-         widget.style = new MiroStickerStyle( StickerColors.RED );
-         widget.setFeature( true );
+      if (!storiesNotInInitiative.isEmpty() || !defectsNotInInitiative.isEmpty()) {
+         MiroSticker widget = new MiroSticker("Not In Initiative");
+
+         widget.style = new MiroStickerStyle(StickerColors.RED);
+         widget.setFeature(true);
          widget.scale = 1.07f;
-         updateWidgetPosition( widget );
-         connector.addWidget( widget );
+         updateWidgetPosition(widget);
+         connector.addWidget(widget);
+      }
 
-         for ( RallyNode node : storiesNotInInitiative )
-         {
-            handleNode( node );
-         }
+      for ( RallyNode node : storiesNotInInitiative ) {
+         handleNode( node );
+      }
+
+      for (RallyNode node: defectsNotInInitiative) {
+         handleNode(node);
       }
    }
 
@@ -125,7 +129,10 @@ public class MiroWriter
    {
       ArrayList<RallyNode> mmfStories = new ArrayList<>(  );
       handleNode( node );
-
+      List<RallyNode> defects = node.getDefects();
+      for (RallyNode defect : defects) {
+         handleNode(defect);
+      }
       List< RallyNode > children = node.getChildren();
       for ( RallyNode child : children ) {
          if (child.isUserStory() && child.hasTag( Tags.MMF )) {
@@ -158,6 +165,10 @@ public class MiroWriter
             boolean inRelease = stats.getStoriesInRelease().contains( node );
             writeNonMMFStory( node, inRelease );
          }
+      } else if (node.isDefect()) {
+         if (shouldAddNode(node)) {
+            writeDefect(node, true);   //todo - how to handle in release
+         }
       }
    }
 
@@ -173,6 +184,7 @@ public class MiroWriter
       if (node.isUserStory() &&
             stats.getReleaseSpecified() &&
             !cardFields.isShowNotInRelease() &&
+            !node.hasChildren() &&
             !stats.getStoriesInRelease().contains( node )) {
          result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
       } else if (node.isOutOfProject()) {
@@ -246,6 +258,22 @@ public class MiroWriter
       card.style = new MiroCardStyle( "#808080");
 
       cardFields.addFieldsToCard(card, node);
+
+      updateWidgetPosition(card);
+      MiroCard newCard = connector.addWidget( card );
+   }
+
+   private void writeDefect(RallyNode node, boolean inRelease) throws IOException {
+      MiroCard card = new MiroCard( getLinkToNode( node ) + node.getName(), inRelease );
+      String description = node.getDescription();
+      if (description.length() > 5700) {
+         description = "Description Too Long. View description in Rally.";
+      }
+
+      cardFields.addFieldsToCard(card, node);
+
+      card.description = description;
+      card.style = new MiroCardStyle( StickerColors.ORANGE);
 
       updateWidgetPosition(card);
       MiroCard newCard = connector.addWidget( card );

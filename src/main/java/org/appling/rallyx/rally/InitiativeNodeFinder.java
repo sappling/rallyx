@@ -17,9 +17,11 @@ import java.util.Optional;
 public class InitiativeNodeFinder {
     private RallyRestApi restApi;
     private ArrayList<RallyNode> stories = new ArrayList<>();
+    private ArrayList<RallyNode> defects = new ArrayList<>();
+
     private boolean findComplete = true;
     private Optional<String> project = Optional.empty();
-    private boolean includeNodesOutOfProject = true;
+    private boolean includParentsOutOfProject = true;
 
     public InitiativeNodeFinder(RallyRestApi restApi) {
         this.restApi = restApi;
@@ -29,9 +31,9 @@ public class InitiativeNodeFinder {
         this.findComplete = findComplete;
     }
 
-    public void setProject(Optional<String> project, boolean includeNodesOutOfProject) {
+    public void setProject(Optional<String> project, boolean includeParentsOutOfProject) {
         this.project = project;
-        this.includeNodesOutOfProject = includeNodesOutOfProject;
+        this.includParentsOutOfProject = includeParentsOutOfProject;
     }
 
     public RallyNode getInitiativeTree(String initiativeID) throws IOException {
@@ -57,6 +59,26 @@ public class InitiativeNodeFinder {
         String id = parentNode.getObjectID();
         if (parentNode.isUserStory()) {
             stories.add(parentNode);
+
+            if (parentNode.getNumberOfDefects() > 0) {
+                QueryResponse response = null;
+                try {
+                    response = restApi.query(RallyQueryFactory.getDefectsForStory(parentNode.getFormattedId()));
+                } catch (IOException e) {
+                    System.err.println("Exception getting defects for: "+parentNode.getFormattedId());
+                    e.printStackTrace();
+                }
+                if (response.wasSuccessful()) {
+                    JsonArray jsonArray = response.getResults();
+                    for (JsonElement nextDefect : jsonArray) {
+                        RallyNode defect = new RallyNode(nextDefect.getAsJsonObject(), initiative, feature, mmf);
+                        if (shouldAddChild(defect)) {
+                            defects.add(defect);
+                            parentNode.addDefect(defect);
+                        }
+                    }
+                }
+            }
         }
 
         // remove the stories that are found beneath the Initiative
@@ -104,10 +126,16 @@ public class InitiativeNodeFinder {
             if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
                 result = false;
             }
+            DefectState defectState = next.getDefectState();
+            if ((defectState == DefectState.Closed) || (defectState == DefectState.Fixed)) {
+                result = false;
+            }
         }
         if (project.isPresent()) {
             if (!next.getProject().getName().equals( project.get() ) ) {
-                if (includeNodesOutOfProject) {
+                if (!next.isDefect() &&
+                      includParentsOutOfProject &&
+                      (next.hasChildren() || (next.getNumberOfDefects() > 0))) {
                     next.setOutOfProject( true );
                 } else  {
                     result = false;
@@ -119,4 +147,5 @@ public class InitiativeNodeFinder {
     }
 
     public List<RallyNode> getStories() { return stories; }
+    public List<RallyNode> getDefects() { return defects; }
 }

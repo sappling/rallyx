@@ -6,3 +6,4 @@ out/**
 *.iws
 .gradle/**
 /src/main/java/org/appling/rallyx/miro/MiroTest.java
+/src/main/java/org/appling/rallyx/rally/RallyTest.java

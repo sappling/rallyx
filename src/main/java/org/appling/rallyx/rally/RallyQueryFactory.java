@@ -11,7 +11,7 @@ import java.util.Optional;
  * Created by sappling on 7/19/2017.
  */
 public class RallyQueryFactory {
-    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children", "Feature", "ObjectID", "DragAndDropRank", "Project", "TaskEstimateTotal", "PlanEstimate", "ScheduleState", "Iteration", "StartDate", "EndDate", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories","Tags");
+    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children", "Defects", "Feature", "ObjectID", "DragAndDropRank", "Project", "TaskEstimateTotal", "PlanEstimate", "State", "ScheduleState", "Iteration", "StartDate", "EndDate", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories","Tags");
 
     public static QueryRequest findInitiative(String initiativeID) {
         QueryRequest request = new QueryRequest("PortfolioItem/Initiative");
@@ -36,6 +36,17 @@ public class RallyQueryFactory {
         return request;
     }
 
+    public static QueryRequest getStory(String storyID) {
+        QueryRequest request = new QueryRequest("HierarchicalRequirement");
+        request.setQueryFilter(new QueryFilter("FormattedID", "=", storyID));
+        request.setFetch(standardFetch);
+
+        request.setScopedDown(true);
+        request.setScopedUp(true);
+        request.setLimit(10000);
+        return request;
+    }
+
     public static QueryRequest getChildren(String id, String parentType) {
         QueryRequest request;
 
@@ -54,6 +65,19 @@ public class RallyQueryFactory {
         }
         request.setOrder("DragAndDropRank ASC");
         request.setFetch(standardFetch);
+        return request;
+    }
+
+    public static QueryRequest getDefectsForStory(String id) {
+        QueryRequest request = new QueryRequest("Defect");
+        request.setQueryFilter(new QueryFilter("Requirement.FormattedID", "=", id));
+        request.setOrder("DragAndDropRank ASC");
+        request.setFetch(standardFetch);
+
+        request.setScopedDown(true);
+        request.setScopedUp(true);
+        request.setLimit(10000);
+
         return request;
     }
 
@@ -78,6 +102,24 @@ public class RallyQueryFactory {
 
     public static QueryRequest findStoriesInRelease(String name, Optional<String> projectRef) {
         QueryRequest request = new QueryRequest("HierarchicalRequirement");
+        request.setScopedDown( true );
+        request.setScopedUp( false );
+        if (projectRef.isPresent()) {
+            request.setProject(projectRef.get());
+        }
+        QueryFilter releaseFilter = new QueryFilter( "Release.Name", "=", name );
+        QueryFilter filter = releaseFilter;
+
+        request.setQueryFilter( filter);
+        request.setFetch(standardFetch);
+        request.setOrder("DragAndDropRank ASC");
+        request.setLimit(10000);
+        return request;
+    }
+
+
+    public static QueryRequest findDefectsInRelease(String name, Optional<String> projectRef) {
+        QueryRequest request = new QueryRequest("Defect");
         request.setScopedDown( true );
         request.setScopedUp( false );
         if (projectRef.isPresent()) {

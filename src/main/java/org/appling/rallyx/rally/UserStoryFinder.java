@@ -50,6 +50,27 @@ public class UserStoryFinder {
         return result;
     }
 
+    public List<RallyNode> getDefects() throws IOException {
+        ArrayList<RallyNode> result = new ArrayList<>();
+
+        QueryResponse response = restApi.query(RallyQueryFactory.findDefectsInRelease(releaseName, getProjectRef()));
+        if (response.wasSuccessful()) {
+            JsonArray jsonElements = response.getResults();
+            for (JsonElement element : jsonElements) {
+                RallyNode next = new RallyNode(element.getAsJsonObject(), null, null, null );
+                if (findComplete == false) {
+                    DefectState defectState = next.getDefectState();
+                    if ((defectState == DefectState.Closed) || (defectState == DefectState.Fixed)) {
+                        continue;
+                    }
+                }
+                result.add(next);
+            }
+        }
+        return result;
+    }
+
+
     private Optional<String> getProjectRef() throws IOException
     {
         if (project.isPresent()) {

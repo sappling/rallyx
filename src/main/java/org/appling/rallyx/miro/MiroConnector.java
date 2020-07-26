@@ -101,18 +101,22 @@ public class MiroConnector
 
       if (!limitRemaining.isEmpty() && !limitReset.isEmpty())
       {
+
+//         System.out.println("Limit Remaining: "+limitRemaining);
+
          long remaining = Long.parseLong( limitRemaining );
 
-         if ( remaining < 200 )
+         if ( remaining <= 400 )
          {
-            Date resetTime = new Date( Long.parseLong( limitReset+2 ) * 1000L );
+            Date resetTime = new Date( (Long.parseLong( limitReset )+2) * 1000L );
+            System.out.println("Rate limit reached. Waiting until: "+resetTime);
             for ( Date now = new Date(); now.getTime() < resetTime.getTime(); now = new Date() )
             {
                long remainingTime = resetTime.getTime() - now.getTime();
                if ( remainingTime > 0 )
                {
                   //Update to show progress on a single line like: u"\u001b[1000D" + str(i + 1) + "%"
-                  System.out.printf( "Rate limit reached.  Pausing for %d more seconds.\n", remainingTime / 1000 );
+                  System.out.printf( "%d seconds remaining.\n", remainingTime / 1000 );
                   try
                   {
                      Thread.sleep( 5000 );
@@ -121,6 +125,7 @@ public class MiroConnector
                   } // intentionally ignore
                }
             }
+            System.out.println("Resuming Miro communications.");
          }
       }
    }
