@@ -7,6 +7,7 @@ import org.appling.rallyx.rally.Tags;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,9 +38,11 @@ public class MiroWriter
       this.stats = stats;
       mmfNodes = stats.getNodesWithTag( Tags.MMF );
       nonMMFStories = stats.getAllStories().stream().filter( n -> !n.hasTag( Tags.MMF ) ).collect( Collectors.toSet() );
-      nonMMFFeatures = stats.getInitiative().getChildren().stream().filter( n -> !n.hasTag( Tags.MMF ) ).collect( Collectors.toSet() );
-
-
+      if (stats.getInitiative() != null) {
+         nonMMFFeatures = stats.getInitiative().getChildren().stream().filter(n -> !n.hasTag(Tags.MMF)).collect(Collectors.toSet());
+      } else {
+         nonMMFFeatures = Collections.emptySet();
+      }
    }
 
    private void initializeTarget() throws IOException
@@ -127,24 +130,25 @@ public class MiroWriter
 
    private void walk(RallyNode node ) throws IOException
    {
-      ArrayList<RallyNode> mmfStories = new ArrayList<>(  );
-      handleNode( node );
-      List<RallyNode> defects = node.getDefects();
-      for (RallyNode defect : defects) {
-         handleNode(defect);
-      }
-      List< RallyNode > children = node.getChildren();
-      for ( RallyNode child : children ) {
-         if (child.isUserStory() && child.hasTag( Tags.MMF )) {
-            mmfStories.add(child);
-         } else  {
-            walk( child );
+      if (node != null) {
+         ArrayList<RallyNode> mmfStories = new ArrayList<>();
+         handleNode(node);
+         List<RallyNode> defects = node.getDefects();
+         for (RallyNode defect : defects) {
+            handleNode(defect);
          }
-      }
+         List<RallyNode> children = node.getChildren();
+         for (RallyNode child : children) {
+            if (child.isUserStory() && child.hasTag(Tags.MMF)) {
+               mmfStories.add(child);
+            } else {
+               walk(child);
+            }
+         }
 
-      for ( RallyNode story : mmfStories )
-      {
-         walk( story );
+         for (RallyNode story : mmfStories) {
+            walk(story);
+         }
       }
    }
 
