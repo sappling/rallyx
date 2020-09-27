@@ -15,6 +15,11 @@ public class MiroShape extends MiroWidget
    }
 
    @Override
+   public String getText() {
+      return text;
+   }
+
+   @Override
    public double getRealWidth()
    {
       return width;

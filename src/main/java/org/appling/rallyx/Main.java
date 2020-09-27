@@ -7,6 +7,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.appling.rallyx.excel.ExcelIssueWriter;
 import org.appling.rallyx.excel.ExcelStoryWriter;
 import org.appling.rallyx.html.HTMLWriter;
+import org.appling.rallyx.miro.MiroUpdater;
 import org.appling.rallyx.miro.MiroWriter;
 import org.appling.rallyx.rally.*;
 import org.appling.rallyx.word.WordWriter;
@@ -18,10 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by sappling on 9/5/2016.
@@ -51,6 +49,9 @@ public class Main {
     private static final String PROP_MIRO_BOARD = "miro.board";
     private static final String PROP_MIRO_FRAME = "miro.frame";
     private static final String PROP_MIRO_LINK = "miro.link";
+    private static final String PROP_MIRO_UPDATE_LINK = "miro.update.link";
+    private static final String PROP_MIRO_UPDATE_BOARD = "miro.update.board";
+    private static final String PROP_MIRO_UPDATE_FRAME = "miro.update.frame";
     private static final String PROP_MIRO_CARD_SHOW = "miro.card.show";
 
 
@@ -196,17 +197,29 @@ public class Main {
                     ExcelIssueWriter issueWriter = new ExcelIssueWriter(stats);
                     issueWriter.write(outName);
                 } else if (outType.equalsIgnoreCase("miro")) {
-                    MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
-                          properties.getProperty( PROP_MIRO_BOARD),
-                          properties.getProperty( PROP_MIRO_FRAME ),
-                          properties.getProperty( PROP_MIRO_CARD_SHOW ));
-                    /*
-                    cardWriter.writeAllMMF();
-                    cardWriter.writeNonMMFFeatures();
-                    cardWriter.writeNonMMFStories();
-                     */
+                    if (properties.containsKey(PROP_MIRO_UPDATE_BOARD) && properties.containsKey(PROP_MIRO_UPDATE_FRAME)) {
+                        MiroUpdater updater = new MiroUpdater(stats, properties.getProperty( PROP_MIRO_TOKEN ),
+                              properties.getProperty( PROP_MIRO_UPDATE_BOARD),
+                              properties.getProperty( PROP_MIRO_UPDATE_FRAME ),
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ));
+                        updater.update();
 
-                    cardWriter.writeAllInOrder();
+
+                        MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
+                              properties.getProperty( PROP_MIRO_BOARD),
+                              properties.getProperty( PROP_MIRO_FRAME ),
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ), updater.getUpdatedNodes());
+
+                        cardWriter.writeAllInOrder();
+
+                    } else {
+                        MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
+                              properties.getProperty( PROP_MIRO_BOARD),
+                              properties.getProperty( PROP_MIRO_FRAME ),
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ), new HashSet<>());
+
+                        cardWriter.writeAllInOrder();
+                    }
                 }
             }
         } catch (Exception e) {
@@ -237,7 +250,8 @@ public class Main {
             }
 
             String miroLink = propFromFile.getProperty( PROP_MIRO_LINK );
-            extractBoardAndFrame( prop, miroLink );
+            String miroUpdateLink = propFromFile.getProperty( PROP_MIRO_UPDATE_LINK );
+            extractBoardAndFrame( prop, miroLink, miroUpdateLink );
         }
 
         Set<String> keys = propFromFile.stringPropertyNames();
@@ -268,10 +282,10 @@ public class Main {
         return prop;
     }
 
-    private static void extractBoardAndFrame( Properties prop, String miroLink )
+    private static void extractBoardAndFrame( Properties prop, String writeLink, String updateLink )
     {
-        if ( miroLink != null ) {
-            List< String > segments = URLEncodedUtils.parsePathSegments( miroLink );
+        if ( writeLink != null ) {
+            List< String > segments = URLEncodedUtils.parsePathSegments( writeLink );
             List< NameValuePair > queries = URLEncodedUtils.parse( segments.get(segments.size()-1), Charset.defaultCharset() );
 
             if (segments.size() >= 6) {
@@ -280,6 +294,18 @@ public class Main {
             if (queries.size() >= 2) {
                 NameValuePair pair = queries.get( 0 );
                 prop.put(PROP_MIRO_FRAME, pair.getValue());
+            }
+        }
+        if ( updateLink != null ) {
+            List< String > segments = URLEncodedUtils.parsePathSegments( updateLink );
+            List< NameValuePair > queries = URLEncodedUtils.parse( segments.get(segments.size()-1), Charset.defaultCharset() );
+
+            if (segments.size() >= 6) {
+                prop.put(PROP_MIRO_UPDATE_BOARD, segments.get( 5 ));
+            }
+            if (queries.size() >= 2) {
+                NameValuePair pair = queries.get( 0 );
+                prop.put(PROP_MIRO_UPDATE_FRAME, pair.getValue());
             }
         }
     }

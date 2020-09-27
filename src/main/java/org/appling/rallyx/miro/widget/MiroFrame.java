@@ -3,8 +3,12 @@ package org.appling.rallyx.miro.widget;
 public class MiroFrame extends MiroWidget
 {
    public String title;
-   public String id;
    public String[] children = new String[0];
+
+   @Override
+   public String getText() {
+      return title;
+   }
 
    @Override
    public double getRealWidth()

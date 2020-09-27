@@ -1,6 +1,5 @@
 package org.appling.rallyx.rally;
 
-import org.appling.rallyx.rally.RallyNode;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -21,6 +20,7 @@ public class StoryStats {
     private Set<RallyNode> storiesInNoRelease = new HashSet<>();
     private Set<RallyNode> allStories = new HashSet<>();
     private Set<RallyNode> allDefects = new HashSet<>();
+    private HashMap<String,RallyNode> allNodesByFormattedId = new HashMap<>();
 
     private RallyNode initiative;
 
@@ -43,6 +43,14 @@ public class StoryStats {
 
     public RallyNode getInitiative() {
         return initiative;
+    }
+
+    public List<RallyNode> getFeatures() {
+        ArrayList<RallyNode> features = new ArrayList<>();
+        if (initiative != null) {
+            features.addAll(initiative.getChildren());
+        }
+        return features;
     }
 
     public Set<RallyNode> getStoriesInRelease() {
@@ -88,6 +96,10 @@ public class StoryStats {
         return Collections.unmodifiableSet(allDefects);
     }
 
+    @Nullable
+    public RallyNode getNodeByFormattedId(String formattedId) {
+        return allNodesByFormattedId.get(formattedId);
+    }
 
     /**
      * Gets all nodes (both Features under the Initiative and Stories) with the specified Tag
@@ -141,7 +153,20 @@ public class StoryStats {
 
         allDefects = new HashSet<>(defectsUnderInitiative);
         allDefects.addAll(defectsNotInInitiative);
+
+        // add to map of nodes by formatted ID
+        allStories.forEach(this::updateFormattedIdMap);
+        allDefects.forEach(this::updateFormattedIdMap);
+        getFeatures().forEach(this::updateFormattedIdMap);
+        if (initiative!= null) {
+            updateFormattedIdMap(initiative);
+        }
     }
+
+    private void updateFormattedIdMap(RallyNode node) {
+        allNodesByFormattedId.put(node.getFormattedId(), node);
+    }
+
 
     private static Set<RallyNode> removeParents(Set<RallyNode> set) {
         HashSet<RallyNode> results = new HashSet<>();

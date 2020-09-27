@@ -16,6 +16,11 @@ public class MiroSticker extends MiroWidget
    }
 
    @Override
+   public String getText() {
+      return text;
+   }
+
+   @Override
    public double getRealWidth() {
       return (width == null ? defaultWidth : width) * scale;
    }

@@ -11,6 +11,8 @@ public class MiroWidget
    public Double height;
 
    public String parentFrameId = null;
+   public String getText() { return ""; } // really want this to be abstract, but some GSON reads dont' allow
+   public String id = null; // only will be filled in when read
 
    public double getRealWidth()  { return width; }
    public double getRealHeight() { return height; }
@@ -38,6 +40,8 @@ public class MiroWidget
          result = MiroCard.class;
       } else if ("STICKER".equalsIgnoreCase( type )) {
          result = MiroSticker.class;
+      } else if ("FRAME".equalsIgnoreCase(type)) {
+         result = MiroFrame.class;
       }
       return result;
    }

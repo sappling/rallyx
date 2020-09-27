@@ -30,6 +30,11 @@ public class MiroCard extends MiroWidget
 
    public boolean isInRelease() { return  inRelease; }
 
+   @Override
+   public String getText() {
+      return title;
+   }
+
    public double getRealWidth() {
       return (width == null ? defaultWidth : width) * scale;
    }

@@ -126,7 +126,7 @@ This output format adds sticky notes and cards into the online whiteboard tool,
 and works in a manner needed for my use.  Features or User Stories that have the tag "MMF"
 are added as a blue sticky note.  Other user stories are added as a Card.
 
-To use the miro option, you must use a properties file and set 3 properties:
+To use the miro option, you must use a properties file and set 2 properties:
 * miro.token - The OAuth Token to authorize use of the board.  While I have created an app to do this, I have not yet
 published it on the Miro Marketplace.  To use this, you will have to create your own app.  You can go to your 
 Miro team's Profile Settings, under the "API, SDK & Embed" tab, and "create an app".  
@@ -137,6 +137,10 @@ a Java Web App that will support this, but it is not yet published as Open Sourc
 * miro.link - This option adds content inside a Miro frame.  Select theFrame, click the "..." and pick "Copy Link".   
 It will be formatted like: ```https://miro.com/app/board/<miroBoard>=/?moveToWidget=<miroframe>&cot=13```
 
+* miro.update.link - This is an optional property.  If specified, it should be a frame who's contents will be updated, 
+but which will not have any new widgets added.  This may be used where one frame (miro.link) represents a backlog
+of work brought into a miro board, and another frame (miro.update.link) is where content is moved from the backlog
+and organized.
 
 License
 -------
