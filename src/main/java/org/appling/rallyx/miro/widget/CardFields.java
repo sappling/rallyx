@@ -101,7 +101,9 @@ public class CardFields
          card.addCustomField( new CustomField( project.getName(), null ) );
       }
 
-      if (showNotInRelease)
+      if (node.isUserStory() && node.hasChildren()) { // epic
+         card.addCustomField(new CustomField("Epic", null));
+      } else if (showNotInRelease)  // epics can't have a release assigned
       {
          if ( !card.isInRelease() )
          {
