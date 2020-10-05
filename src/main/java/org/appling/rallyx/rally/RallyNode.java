@@ -198,6 +198,12 @@ public class RallyNode {
                  break;
              }
          }
+         for (RallyNode defect : defects) {
+            if (!defect.isOutOfProject()) {
+               result = true;
+               break;
+            }
+         }
       }
       return result;
    }

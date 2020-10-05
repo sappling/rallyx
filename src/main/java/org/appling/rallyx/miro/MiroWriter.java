@@ -203,10 +203,12 @@ public class MiroWriter
             stats.getReleaseSpecified() &&
             !cardFields.isShowNotInRelease() &&
             !node.hasChildren() &&
+            !(node.getNumberOfDefects() > 0) &&
             !stats.getStoriesInRelease().contains( node )) {
          result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
       } else if (node.isOutOfProject()) {
-         if (!node.hasDescendentsInProject()) {
+         if (!node.hasDescendentsInProject() &&
+         !(node.getNumberOfDefects() > 0)) {
             result = false;
          }
       }
