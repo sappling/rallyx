@@ -126,9 +126,11 @@ public class InitiativeNodeFinder {
             if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
                 result = false;
             }
-            DefectState defectState = next.getDefectState();
-            if ((defectState == DefectState.Closed) || (defectState == DefectState.Fixed)) {
-                result = false;
+            if (next.isDefect()) {
+                DefectState defectState = next.getDefectState();
+                if ((defectState == DefectState.Closed) || (defectState == DefectState.Fixed)) {
+                    result = false;
+                }
             }
         }
         if (project.isPresent()) {

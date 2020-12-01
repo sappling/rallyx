@@ -30,8 +30,12 @@ public class MiroUpdater extends MiroWriter {
 
       for (Map.Entry<String, MiroWidget> nextEntry : foundWidgets.entrySet()) {
          RallyNode node = stats.getNodeByFormattedId(nextEntry.getKey());
-         updatedNodes.add(node);
-         handleNode(node, nextEntry.getValue().id);
+         if (node != null) {
+            updatedNodes.add(node);
+            handleNode(node, nextEntry.getValue().id);
+         } else {
+            System.out.println("Card with id of'"+nextEntry.getKey()+"' found, but may have been removed in Rally");
+         }
       }
    }
 
