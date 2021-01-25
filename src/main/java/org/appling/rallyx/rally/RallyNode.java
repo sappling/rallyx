@@ -315,7 +315,7 @@ public class RallyNode {
       return result;
    }
 
-   public List<RallyNode> getDefects() throws IOException {
+   public List<RallyNode> getDefects() {
       return Collections.unmodifiableList(defects);
    }
 

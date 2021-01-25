@@ -208,7 +208,7 @@ public class MiroWriter
          result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
       } else if (node.isOutOfProject()) {
          if (!node.hasDescendentsInProject() &&
-         !(node.getNumberOfDefects() > 0)) {
+         !(node.getDefects().size() > 0)) {
             result = false;
          }
       }
