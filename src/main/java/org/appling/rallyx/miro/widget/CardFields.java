@@ -12,6 +12,7 @@ public class CardFields
    private static final String FIELD_MMF = "mmf";
    private static final String FIELD_TEAM = "team";
    private static final String FIELD_NOT_IN_RELEASE = "notinrelease";
+   private static final String FIELD_UNASSIGNED = "unassigned";
 
    private boolean showSize = false;
    private boolean showIteration = false;
@@ -19,6 +20,7 @@ public class CardFields
    private boolean showMMF = false;
    private boolean showTeam = false;
    private boolean showNotInRelease = false;
+   private boolean showUnassigned = false;
 
 
 
@@ -49,6 +51,9 @@ public class CardFields
             }
             if ( FIELD_NOT_IN_RELEASE.equalsIgnoreCase(option)) {
                showNotInRelease = true;
+            }
+            if (FIELD_UNASSIGNED.equalsIgnoreCase(option)) {
+               showUnassigned = true;
             }
          }
       }
@@ -111,6 +116,9 @@ public class CardFields
             card.style = new MiroCardStyle( "#E00000" );
          }
       }
+      if (showUnassigned && (node.getIteration()==null)) {
+         card.addCustomField(new CustomField("Unassigned", null, "#f24726"));
+      }
 
    }
 
@@ -143,4 +151,6 @@ public class CardFields
    {
       return showNotInRelease;
    }
+
+   public boolean isShowUnassigned() { return showUnassigned; }
 }

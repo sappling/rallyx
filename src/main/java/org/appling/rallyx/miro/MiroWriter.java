@@ -26,6 +26,7 @@ public class MiroWriter
    private double currentY = 0;
    private double ySpacing = 20;
    private double xSpacing = 20;
+   private boolean lastNodeWasFeature = false;
 
 
 
@@ -66,7 +67,7 @@ public class MiroWriter
          {
             //connector.setTargetFrame( targetId );
             currentY = target.getTop() + (4*ySpacing);
-            currentX = target.getLeft() + xSpacing;
+            currentX = target.getLeft(); // + xSpacing/2;
          } else {
             currentX = target.x;
             currentY = target.y + target.getRealHeight()/2 + ySpacing;
@@ -129,7 +130,7 @@ public class MiroWriter
          widget.style = new MiroStickerStyle(StickerColors.RED);
          widget.setFeature(true);
          widget.scale = 1.07f;
-         updateWidgetPosition(widget);
+         updateWidgetPosition(widget, true);
          connector.addWidget(widget, false);
       }
 
@@ -226,7 +227,7 @@ public class MiroWriter
    }
 */
 
-   private void updateWidgetPosition(MiroWidget widget) {
+   private void updateWidgetPosition(MiroWidget widget, boolean moveToNewColumn) {
       if ("sticker".equalsIgnoreCase( widget.getType())) {
          MiroSticker sticker = (MiroSticker) widget;
          if (sticker.isFeature()) { // Feature or Not In Initiative
@@ -234,7 +235,9 @@ public class MiroWriter
          } else if (sticker.style.backgroundColor.equals( StickerColors.PASTEL_BLUE )) { // MMF
             currentY = target.getTop() + (ySpacing * 2) + sticker.getRealHeight();
          }
-         currentX += MiroCard.getDefaultWidth() + xSpacing;
+         if (moveToNewColumn) {
+            currentX += MiroCard.getDefaultWidth() + xSpacing;
+         }
       }
 
       widget.x = currentX;
@@ -249,14 +252,18 @@ public class MiroWriter
       if (node.isOutOfProject()) {
          text += " <span style=\"color:red\">NIP</span>";      // Decided on NIP for Not In Project
       }
+      if (cardFields.isShowUnassigned() && !node.hasChildren() && node.getDefects().isEmpty() && (node.getIteration() == null)) {
+         text += " <span style=\"color:red\">Unassigned</span>";
+      }
       MiroSticker widget = new MiroSticker( text );
       widget.id = widgetId;   // note this is null for writing, but must be set for updating
       widget.style = new MiroStickerStyle( StickerColors.PASTEL_BLUE );
       widget.setFeature( node.isFeature());
       widget.scale = 1.07f;
 
-      updateWidgetPosition(widget);
+      updateWidgetPosition(widget, !lastNodeWasFeature);
       handleWidget( widget, node);
+      lastNodeWasFeature = false;
    }
 
    private void writeNonMMFFeature( RallyNode node, @Nullable String widgetId) throws IOException
@@ -266,8 +273,9 @@ public class MiroWriter
       widget.style = new MiroStickerStyle( StickerColors.GREEN  );
       widget.setFeature( true );
       widget.scale = 1.07f;
-      updateWidgetPosition(widget);
+      updateWidgetPosition(widget, true);
       handleWidget( widget, node);
+      lastNodeWasFeature = true;
    }
 
    private void writeNonMMFStory(RallyNode node, boolean inRelease, @Nullable String widgetId) throws IOException
@@ -283,8 +291,9 @@ public class MiroWriter
 
       cardFields.addFieldsToCard(card, node);
 
-      updateWidgetPosition(card);
+      updateWidgetPosition(card, true);
       MiroWidget newCard = handleWidget( card, node);
+      lastNodeWasFeature = false;
    }
 
    private void writeDefect(RallyNode node, boolean inRelease, @Nullable String widgetId) throws IOException {
@@ -300,7 +309,7 @@ public class MiroWriter
       card.description = description;
       card.style = new MiroCardStyle( StickerColors.ORANGE);
 
-      updateWidgetPosition(card);
+      updateWidgetPosition(card, true);
       MiroWidget newCard = handleWidget( card, node);
    }
 
