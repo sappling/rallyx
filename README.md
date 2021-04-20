@@ -142,6 +142,16 @@ but which will not have any new widgets added.  This may be used where one frame
 of work brought into a miro board, and another frame (miro.update.link) is where content is moved from the backlog
 and organized.
 
+* miro.card.show - This is a comma separated list of options
+  * size - show the estimated size in points for a user story 
+  * iteration - show the scheduled iteration
+  * team - show the team (project)
+  * feature - show the parent feature ID on a user story
+  * MMF - show the parent MMF on a user story
+  * notinrelease - adds a note a marks the card in red if not in the specified release
+  * unassigned - adds a dark red note to the card if not scheduled for an iteration
+  * compactMMF - lays out the MMF cards in a column as long as they don't have any children
+
 License
 -------
 

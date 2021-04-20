@@ -4,6 +4,7 @@ import org.appling.rallyx.miro.widget.*;
 import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.StoryStats;
 import org.appling.rallyx.rally.Tags;
+import org.docx4j.wml.P;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -26,8 +27,7 @@ public class MiroWriter
    private double currentY = 0;
    private double ySpacing = 20;
    private double xSpacing = 20;
-   private boolean lastNodeWasFeature = false;
-
+   private Optional<RallyNode>lastNode = Optional.empty();
 
 
    public MiroWriter(StoryStats stats, String authToken, String boardId, String targetId, String fieldsToShow, HashSet<RallyNode> ignore) {
@@ -130,7 +130,7 @@ public class MiroWriter
          widget.style = new MiroStickerStyle(StickerColors.RED);
          widget.setFeature(true);
          widget.scale = 1.07f;
-         updateWidgetPosition(widget, true);
+         updateWidgetPosition(widget);
          connector.addWidget(widget, false);
       }
 
@@ -227,14 +227,33 @@ public class MiroWriter
    }
 */
 
-   private void updateWidgetPosition(MiroWidget widget, boolean moveToNewColumn) {
+   private void updateWidgetPosition(MiroWidget widget) {
+      boolean moveToNewColumn = false;
+      /*
+      NII - false
+      MMF - varies
+      Feature - true
+      others doesn't matter
+       */
       if ("sticker".equalsIgnoreCase( widget.getType())) {
          MiroSticker sticker = (MiroSticker) widget;
          if (sticker.isFeature()) { // Feature or Not In Initiative
             currentY = target.getTop() + ySpacing;
+            moveToNewColumn = true;
          } else if (sticker.style.backgroundColor.equals( StickerColors.PASTEL_BLUE )) { // MMF
-            currentY = target.getTop() + (ySpacing * 2) + sticker.getRealHeight();
+            if (cardFields.isCompactMMF()) {
+               if (lastNode.isPresent()) {
+                  RallyNode lastRallyNode = lastNode.get();
+                  moveToNewColumn = (lastRallyNode.isUserStory() && !lastRallyNode.hasTag(Tags.MMF)) || lastRallyNode.isDefect();//!lastNode.get().isFeature();
+               }
+            } else {
+               moveToNewColumn = true;
+            }
+            if (moveToNewColumn) {
+               currentY = target.getTop() + (ySpacing * 2) + sticker.getRealHeight();
+            }
          }
+
          if (moveToNewColumn) {
             currentX += MiroCard.getDefaultWidth() + xSpacing;
          }
@@ -261,9 +280,9 @@ public class MiroWriter
       widget.setFeature( node.isFeature());
       widget.scale = 1.07f;
 
-      updateWidgetPosition(widget, !lastNodeWasFeature);
+      updateWidgetPosition(widget);
       handleWidget( widget, node);
-      lastNodeWasFeature = false;
+      lastNode = Optional.of(node);
    }
 
    private void writeNonMMFFeature( RallyNode node, @Nullable String widgetId) throws IOException
@@ -273,9 +292,8 @@ public class MiroWriter
       widget.style = new MiroStickerStyle( StickerColors.GREEN  );
       widget.setFeature( true );
       widget.scale = 1.07f;
-      updateWidgetPosition(widget, true);
+      updateWidgetPosition(widget);
       handleWidget( widget, node);
-      lastNodeWasFeature = true;
    }
 
    private void writeNonMMFStory(RallyNode node, boolean inRelease, @Nullable String widgetId) throws IOException
@@ -291,9 +309,8 @@ public class MiroWriter
 
       cardFields.addFieldsToCard(card, node);
 
-      updateWidgetPosition(card, true);
+      updateWidgetPosition(card);
       MiroWidget newCard = handleWidget( card, node);
-      lastNodeWasFeature = false;
    }
 
    private void writeDefect(RallyNode node, boolean inRelease, @Nullable String widgetId) throws IOException {
@@ -309,7 +326,7 @@ public class MiroWriter
       card.description = description;
       card.style = new MiroCardStyle( StickerColors.ORANGE);
 
-      updateWidgetPosition(card, true);
+      updateWidgetPosition(card);
       MiroWidget newCard = handleWidget( card, node);
    }
 
@@ -318,6 +335,7 @@ public class MiroWriter
       if (!ignore.contains(node)) {
          result = connector.addWidget(widget, false);
       }
+      lastNode = Optional.of(node);
       return result;
    }
 }

@@ -13,6 +13,7 @@ public class CardFields
    private static final String FIELD_TEAM = "team";
    private static final String FIELD_NOT_IN_RELEASE = "notinrelease";
    private static final String FIELD_UNASSIGNED = "unassigned";
+   private static final String FIELD_COMPACTMMF = "compactmmf";
 
    private boolean showSize = false;
    private boolean showIteration = false;
@@ -21,6 +22,7 @@ public class CardFields
    private boolean showTeam = false;
    private boolean showNotInRelease = false;
    private boolean showUnassigned = false;
+   private boolean compactMMF = false;
 
 
 
@@ -54,6 +56,9 @@ public class CardFields
             }
             if (FIELD_UNASSIGNED.equalsIgnoreCase(option)) {
                showUnassigned = true;
+            }
+            if (FIELD_COMPACTMMF.equalsIgnoreCase(option)) {
+               compactMMF = true;
             }
          }
       }
@@ -153,4 +158,6 @@ public class CardFields
    }
 
    public boolean isShowUnassigned() { return showUnassigned; }
+
+   public boolean isCompactMMF() { return  compactMMF; }
 }
