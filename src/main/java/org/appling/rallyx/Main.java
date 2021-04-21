@@ -130,8 +130,9 @@ public class Main {
                 }
             }
 
+            String releaseName = "";
             if (properties.containsKey(PROP_RELEASE)) {
-                String releaseName = properties.getProperty(PROP_RELEASE);
+                releaseName = properties.getProperty(PROP_RELEASE);
                 UserStoryFinder finder = new UserStoryFinder(restApi);
                 finder.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
                 finder.setRelease(releaseName);
@@ -170,7 +171,7 @@ public class Main {
             */
 
             // statistics
-            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList, initiative);
+            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList, initiative, releaseName);
             stats.printStats();
 
             if (outType != null) {

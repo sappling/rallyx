@@ -21,11 +21,13 @@ public class StoryStats {
     private Set<RallyNode> allStories = new HashSet<>();
     private Set<RallyNode> allDefects = new HashSet<>();
     private HashMap<String,RallyNode> allNodesByFormattedId = new HashMap<>();
+    private String releaseName;
 
     private RallyNode initiative;
 
-    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, @Nullable List<RallyNode> defectsInReleaseList, @Nullable List<RallyNode> defectsUnderInitiativeList, RallyNode initiative) {
+    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, @Nullable List<RallyNode> defectsInReleaseList, @Nullable List<RallyNode> defectsUnderInitiativeList, RallyNode initiative, String releaseName) {
         this.initiative = initiative;
+        this.releaseName = releaseName;
         if (storiesInReleaseList != null) {
             storiesInRelease = new HashSet<>(storiesInReleaseList);
         }
@@ -44,6 +46,7 @@ public class StoryStats {
     public RallyNode getInitiative() {
         return initiative;
     }
+    public String getReleaseName() { return releaseName; }
 
     public List<RallyNode> getFeatures() {
         ArrayList<RallyNode> features = new ArrayList<>();

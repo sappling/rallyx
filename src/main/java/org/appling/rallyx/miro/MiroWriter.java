@@ -181,7 +181,7 @@ public class MiroWriter
          }
       } else if (node.isUserStory()) {
          if (shouldAddNode( node )) {
-            boolean inRelease = node.hasChildren() || stats.getStoriesInRelease().contains( node );
+            boolean inRelease = node.hasChildren() || stats.getReleaseName().equals(node.getRelease()); //stats.getStoriesInRelease().contains( node );
             writeNonMMFStory( node, inRelease, widgetId );
          }
       } else if (node.isDefect()) {
