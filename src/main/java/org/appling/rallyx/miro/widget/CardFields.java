@@ -121,7 +121,9 @@ public class CardFields
             card.style = new MiroCardStyle( "#E00000" );
          }
       }
-      if (showUnassigned && (node.getIteration()==null)) {
+      if (showUnassigned && (node.getIteration()==null) &&  // unassigned
+            !node.hasChildren() &&  // Not an epic
+            !((node.getPlanEstimate() == 0f) && (node.getNumberOfDefects() > 0))) {    // not a placholder story for defects
          card.addCustomField(new CustomField("Unassigned", null, "#f24726"));
       }
 
