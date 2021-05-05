@@ -41,7 +41,7 @@ public class MiroUpdater extends MiroWriter {
 
    @Override
    protected MiroWidget handleWidget(MiroWidget widget, RallyNode node) throws IOException {
-      return connector.updateWidget(widget, false);
+      return connector.updateWidget(widget, "Error updating "+node.getFormattedId(), false);
    }
 
    public HashSet<RallyNode> getUpdatedNodes() {

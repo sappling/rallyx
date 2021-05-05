@@ -52,7 +52,7 @@ public class MiroConnector
       return result;
    }
 
-   public <W extends MiroWidget > W addWidget( W widget, boolean inRetry) throws IOException
+   public <W extends MiroWidget > W addWidget( W widget, String contextErrorMessage, boolean inRetry) throws IOException
    {
       if (targetFrame != null) {
          widget.parentFrameId = targetFrame;
@@ -65,19 +65,19 @@ public class MiroConnector
             .bodyString( newContent, ContentType.APPLICATION_JSON )
             .execute().returnResponse();
 
-      boolean retry = checkForError( httpResponse, widget.getText() );
+      boolean retry = checkForError( httpResponse, widget.getText(), contextErrorMessage);
       waitForLimitReset(httpResponse);
 
       if (retry) {
          rateLimitRetryWait(inRetry);
-         return addWidget(widget, true);
+         return addWidget(widget, contextErrorMessage, true);
       }
 
       String resultString = EntityUtils.toString(httpResponse.getEntity());
       return (W) gson.fromJson( resultString, widget.getClass() );
    }
 
-   public <W extends MiroWidget> W updateWidget(W widget, boolean inRetry) throws IOException
+   public <W extends MiroWidget> W updateWidget(W widget, String contextErrorMessage, boolean inRetry) throws IOException
    {
       if (targetFrame != null) {
          widget.parentFrameId = targetFrame;
@@ -100,12 +100,12 @@ public class MiroConnector
             .bodyString( newContent, ContentType.APPLICATION_JSON )
             .execute().returnResponse();
 
-      boolean retry = checkForError( httpResponse, widget.getText() );
+      boolean retry = checkForError( httpResponse, widget.getText(), contextErrorMessage );
       waitForLimitReset(httpResponse);
 
       if (retry) {
          rateLimitRetryWait(inRetry);
-         return updateWidget(widget, true);
+         return updateWidget(widget, contextErrorMessage, true);
       }
 
       String resultString = EntityUtils.toString(httpResponse.getEntity());
@@ -119,7 +119,7 @@ public class MiroConnector
             .addHeader( "Accept", "application/json, text/plain, */*" )
             .execute().returnResponse();
 
-      boolean retry = checkForError( httpResponse, "Unknown" );
+      boolean retry = checkForError( httpResponse, "Unknown" , "Error getting widget with id "+id);
       waitForLimitReset(httpResponse);
 
       if (retry) {
@@ -140,7 +140,7 @@ public class MiroConnector
             .addHeader( "Authorization", "Bearer " + authToken )
             .addHeader( "Accept", "application/json, text/plain, */*" )
             .execute().returnResponse();
-      boolean retry = checkForError( httpResponse, "Unknown" );
+      boolean retry = checkForError( httpResponse, "Unknown", "Error reading content of frame "+id );
       waitForLimitReset(httpResponse);
 
       if (retry) {
@@ -157,7 +157,7 @@ public class MiroConnector
     * @return true if rate limit was exceeded and we should retry
     * @throws IOException for any error other than rate limit exceeded
     */
-   private boolean checkForError(HttpResponse httpResponse, String title) throws IOException {
+   private boolean checkForError(HttpResponse httpResponse, String title, String errorContextMessage) throws IOException {
       StatusLine statusLine = httpResponse.getStatusLine();
       if (statusLine.getStatusCode() > 201) {
 
@@ -172,7 +172,7 @@ public class MiroConnector
                return false;
             }
          }
-         throw new IOException( "Bad Response writing Miro:" + statusLine.getReasonPhrase() + " - " + ((errorResponse.message != null) ? errorResponse.message : ""));
+         throw new IOException( "Bad Response writing Miro: " +errorContextMessage+ " - " + statusLine.getReasonPhrase() + " - " + ((errorResponse.message != null) ? errorResponse.message : ""));
       }
       return false;
    }

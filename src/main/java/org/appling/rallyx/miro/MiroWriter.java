@@ -131,7 +131,7 @@ public class MiroWriter
          widget.setFeature(true);
          widget.scale = 1.07f;
          updateWidgetPosition(widget);
-         connector.addWidget(widget, false);
+         connector.addWidget(widget, "Error adding Not In Initiative sticker", false);
       }
 
       for ( RallyNode node : storiesNotInInitiative ) {
@@ -333,7 +333,7 @@ public class MiroWriter
    protected MiroWidget handleWidget(MiroWidget widget, RallyNode node) throws IOException {
       MiroWidget result = null;
       if (!ignore.contains(node)) {
-         result = connector.addWidget(widget, false);
+         result = connector.addWidget(widget, "Error adding "+node.getFormattedId(), false);
       }
       lastNode = Optional.of(node);
       return result;
