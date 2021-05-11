@@ -203,6 +203,9 @@ public class Main {
                               properties.getProperty( PROP_MIRO_UPDATE_BOARD),
                               properties.getProperty( PROP_MIRO_UPDATE_FRAME ),
                               properties.getProperty( PROP_MIRO_CARD_SHOW ));
+                        if (proxy_url != null) {
+                            updater.setProxy(proxy_url, proxy_user, proxy_pass);
+                        }
                         updater.update();
 
 
@@ -210,6 +213,9 @@ public class Main {
                               properties.getProperty( PROP_MIRO_BOARD),
                               properties.getProperty( PROP_MIRO_FRAME ),
                               properties.getProperty( PROP_MIRO_CARD_SHOW ), updater.getUpdatedNodes());
+                        if (proxy_url != null) {
+                            cardWriter.setProxy(proxy_url, proxy_user, proxy_pass);
+                        }
 
                         cardWriter.writeAllInOrder();
 
@@ -218,6 +224,9 @@ public class Main {
                               properties.getProperty( PROP_MIRO_BOARD),
                               properties.getProperty( PROP_MIRO_FRAME ),
                               properties.getProperty( PROP_MIRO_CARD_SHOW ), new HashSet<>());
+                        if (proxy_url != null) {
+                            cardWriter.setProxy(proxy_url, proxy_user, proxy_pass);
+                        }
 
                         cardWriter.writeAllInOrder();
                     }

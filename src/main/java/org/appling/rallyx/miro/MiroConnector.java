@@ -7,17 +7,14 @@ import com.google.gson.JsonObject;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
-import org.appling.rallyx.miro.widget.MiroCard;
-import org.appling.rallyx.miro.widget.MiroFrame;
 import org.appling.rallyx.miro.widget.MiroWidget;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,10 +26,13 @@ public class MiroConnector
    private String boardId;
    private Gson gson;
    private static int retryCount = 0;
+   private Executor executor;
+   private String proxyUrl = null;
 
    public MiroConnector(String authToken, String boardId) {
       this.authToken = authToken;
       this.boardId = boardId;
+      executor = Executor.newInstance();
 
       GsonBuilder builder = new GsonBuilder();
       gson = builder.create();
@@ -40,6 +40,13 @@ public class MiroConnector
 
    public void setTargetFrame(String targetFrame) {
       this.targetFrame = targetFrame;
+   }
+
+   public void setProxy(String proxyUrl, @Nullable String proxyUser, @Nullable String proxyPass) {
+      this.proxyUrl = proxyUrl;
+      if (proxyUser!=null || proxyPass!=null) {
+         executor = executor.auth(proxyUser, proxyPass);
+      }
    }
 
    private String getHeaderValue( HttpResponse response, String headerName) throws IOException
@@ -59,11 +66,14 @@ public class MiroConnector
       }
       String newContent = gson.toJson( widget );
 
-      HttpResponse httpResponse = Request.Post( "https://api.miro.com/v1/boards/" + boardId + "/widgets" )
+       Request request = Request.Post( "https://api.miro.com/v1/boards/" + boardId + "/widgets" )
             .addHeader( "Authorization", "Bearer " + authToken )
             .addHeader( "Accept", "application/json, text/plain, */*" )
-            .bodyString( newContent, ContentType.APPLICATION_JSON )
-            .execute().returnResponse();
+            .bodyString( newContent, ContentType.APPLICATION_JSON );
+       if (proxyUrl != null) {
+          request = request.viaProxy(proxyUrl);
+       }
+      HttpResponse httpResponse = executor.execute(request).returnResponse();
 
       boolean retry = checkForError( httpResponse, widget.getText(), contextErrorMessage);
       waitForLimitReset(httpResponse);
@@ -94,11 +104,15 @@ public class MiroConnector
          newContent = gson.toJson( jObj );
       }
 
-      HttpResponse httpResponse = Request.Patch( "https://api.miro.com/v1/boards/" + boardId + "/widgets/" +widget.id)
+      Request request = Request.Patch( "https://api.miro.com/v1/boards/" + boardId + "/widgets/" +widget.id)
             .addHeader( "Authorization", "Bearer " + authToken )
             .addHeader( "Accept", "application/json, text/plain, */*" )
-            .bodyString( newContent, ContentType.APPLICATION_JSON )
-            .execute().returnResponse();
+            .bodyString( newContent, ContentType.APPLICATION_JSON );
+      if (proxyUrl != null) {
+         request.viaProxy(proxyUrl);
+      }
+
+      HttpResponse httpResponse = executor.execute(request).returnResponse();
 
       boolean retry = checkForError( httpResponse, widget.getText(), contextErrorMessage );
       waitForLimitReset(httpResponse);
@@ -114,10 +128,14 @@ public class MiroConnector
 
    public <W extends MiroWidget > W getWidget(String id, boolean inRetry) throws IOException
    {
-      HttpResponse httpResponse = Request.Get( "https://api.miro.com/v1/boards/" + boardId + "/widgets/"+id )
+      Request request = Request.Get( "https://api.miro.com/v1/boards/" + boardId + "/widgets/"+id )
             .addHeader( "Authorization", "Bearer " + authToken )
-            .addHeader( "Accept", "application/json, text/plain, */*" )
-            .execute().returnResponse();
+            .addHeader( "Accept", "application/json, text/plain, */*" );
+      if (proxyUrl != null) {
+         request = request.viaProxy(proxyUrl);
+      }
+
+      HttpResponse httpResponse =executor.execute(request).returnResponse();
 
       boolean retry = checkForError( httpResponse, "Unknown" , "Error getting widget with id "+id);
       waitForLimitReset(httpResponse);
@@ -136,10 +154,13 @@ public class MiroConnector
    public <W extends MiroWidget > List<W> getFrameContent(String id, boolean inRetry) throws IOException {
       List<W> result = new ArrayList<>();
 
-      HttpResponse httpResponse = Request.Get( "https://api.miro.com/v1/boards/" + boardId + "/widgets/"+id )
+      Request request = Request.Get( "https://api.miro.com/v1/boards/" + boardId + "/widgets/"+id )
             .addHeader( "Authorization", "Bearer " + authToken )
-            .addHeader( "Accept", "application/json, text/plain, */*" )
-            .execute().returnResponse();
+            .addHeader( "Accept", "application/json, text/plain, */*" );
+      if (proxyUrl != null) {
+         request = request.viaProxy(proxyUrl);
+      }
+      HttpResponse httpResponse =  executor.execute(request).returnResponse();
       boolean retry = checkForError( httpResponse, "Unknown", "Error reading content of frame "+id );
       waitForLimitReset(httpResponse);
 

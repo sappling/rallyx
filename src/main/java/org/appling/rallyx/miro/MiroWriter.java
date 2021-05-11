@@ -5,6 +5,7 @@ import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.StoryStats;
 import org.appling.rallyx.rally.Tags;
 import org.docx4j.wml.P;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -44,6 +45,10 @@ public class MiroWriter
       } else {
          nonMMFFeatures = Collections.emptySet();
       }
+   }
+
+   public void setProxy(@NotNull String proxyUrl, @Nullable String proxyUser, @Nullable String proxyPass) {
+      connector.setProxy(proxyUrl, proxyUser, proxyPass);
    }
 
    public Set<RallyNode> getMmfNodes() {
