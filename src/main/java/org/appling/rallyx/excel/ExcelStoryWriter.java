@@ -50,22 +50,29 @@ public class ExcelStoryWriter {
 
     public void write(String outName) throws IOException {
         Workbook wb = new XSSFWorkbook();
-        Sheet s = wb.createSheet();
-
         initializeStyles(wb);
 
+        writeSheet(wb.createSheet("Stories"), new ArrayList<>(stats.getAllStories()));
 
-        Row headerRow = s.createRow(rowNum++);
+        writeSheet(wb.createSheet("Defects"), new ArrayList<>(stats.getAllDefects()));
+
+        FileOutputStream outStream = new FileOutputStream(ensureExtention(outName, "Report.xlsx"));
+        wb.write(outStream);
+        outStream.close();
+    }
+
+    public void writeSheet(Sheet s, ArrayList<RallyNode> allStories)
+    {
+        Row headerRow = s.createRow(0);
         int columnNum = 0;
         for (ColumnWriter columnWriter : getColunns()) {
             Cell cell = headerRow.createCell(columnNum++);
             cell.setCellValue(columnWriter.getColumnHeader());
         }
 
-        ArrayList<RallyNode> allStories = new ArrayList<>(stats.getAllStories());
         allStories.sort(new RallyNodeRankComparator());
 
-        writeRows(s, allStories);
+        int numRows = writeRows(s, allStories);
 
 
         columnNum = 0;
@@ -73,10 +80,7 @@ public class ExcelStoryWriter {
             s.autoSizeColumn(columnNum++);
         }
         String lastColumn = CellReference.convertNumToColString(columnNum-1);
-        s.setAutoFilter(CellRangeAddress.valueOf("A1:"+lastColumn+Integer.toString(rowNum-1)));
-        FileOutputStream outStream = new FileOutputStream(ensureExtention(outName, "Report.xlsx"));
-        wb.write(outStream);
-        outStream.close();
+        s.setAutoFilter(CellRangeAddress.valueOf("A1:"+lastColumn+Integer.toString(numRows)));
     }
 
     protected ColumnWriter[] getColunns() {
@@ -96,7 +100,8 @@ public class ExcelStoryWriter {
         error_style.setFont(errorFont);
     }
 
-    private void writeRows(Sheet s, List<RallyNode> nodes) {
+    private int writeRows(Sheet s, List<RallyNode> nodes) {
+        int rowNum = 1;
         ExcelWritingContext context = new ExcelWritingContext(s.getWorkbook());
         context.setLinkStyle(hlink_style);
         context.setErrorStyle(error_style);
@@ -114,6 +119,7 @@ public class ExcelStoryWriter {
                 columnWriter.writeCell(cell, context);
             }
         }
+        return rowNum-1;
     }
 
     protected String ensureExtention(String outName, String defaultName) {
