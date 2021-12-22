@@ -3,6 +3,7 @@ package org.appling.rallyx.miro.widget;
 import org.appling.rallyx.rally.Iteration;
 import org.appling.rallyx.rally.Project;
 import org.appling.rallyx.rally.RallyNode;
+import org.appling.rallyx.rally.Tags;
 
 public class CardFields
 {
@@ -23,6 +24,7 @@ public class CardFields
    private boolean showNotInRelease = false;
    private boolean showUnassigned = false;
    private boolean compactMMF = false;
+   private boolean showInP = false;
 
 
 
@@ -108,7 +110,7 @@ public class CardFields
 
       if (showTeam) {
          Project project = node.getProject();
-         card.addCustomField( new CustomField( project.getName(), null ) );
+         card.addCustomField( new CustomField( project.getName(), null, getColorForTeam(project.getName()) ) );
       }
 
       if (node.isUserStory() && node.hasChildren()) { // epic
@@ -126,7 +128,55 @@ public class CardFields
             !((node.getPlanEstimate() == 0f) && (node.getNumberOfDefects() > 0))) {    // not a placholder story for defects
          card.addCustomField(new CustomField("Unassigned", null, "#f24726"));
       }
+      if (showInP && node.hasTag(Tags.IPPREP)) {
+         card.addCustomField(new CustomField("I&P Prep", null, "#E00000"));
+      }
 
+   }
+
+   private String getColorForTeam(String team) {
+      if (team.isEmpty()) {
+         return "#ffffff";
+      } else {
+         /*
+         NextGen
+         Ninja Turtles
+         Thunder Cats
+         SideKicks
+         Dogfish
+         Solutions Dev
+         Leaping Dol
+         Chameleons
+         Firmware // T&I
+          */
+
+         if (team.startsWith("Next")) {
+            //return "#E0E0E0";
+            return "#E0E0E0";
+         } else if (team.startsWith("Ninja")) {
+            return "#FFFFFF"; //return "#50ff50";
+         } else if (team.startsWith("Thun")) {
+            return "#FFFFFF"; //return "#5050ff";
+         } else if (team.startsWith("Side")) {
+            return "#FFFFFF"; //return "#ff00ff";
+         } else if (team.startsWith("Dog")) {
+            return "#FFFFFF"; //return "#ffaaaa";
+         } else if (team.startsWith("Solu")) {
+            return "#FFFFFF"; //return "#ff9d48";
+         } else if (team.startsWith("Leap")) {
+            return "#FFFFFF"; //return "#a6ccf5";
+         } else if (team.startsWith("Chame")) {
+            return "#FFFFFF"; //return "#ea94bb";
+         } else if (team.startsWith("Koa")) {
+            return "#FFFFFF"; //return "#f5f6f8";
+         } else if (team.startsWith("Firmware")) {
+            return "#E0E0FF";
+         }
+         else {
+            return "#808080";
+         }
+
+      }
    }
 
    public boolean isShowSize()

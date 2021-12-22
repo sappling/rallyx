@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -56,6 +57,9 @@ public class Main {
 
 
     private static Options options = setupOptions();
+    private static String proxy_url;
+    private static String proxy_user;
+    private static String proxy_pass;
 
 
     static public void main(String args[]) {
@@ -80,6 +84,10 @@ public class Main {
         }
 
         Properties properties = getOptions(line);
+        proxy_url = properties.getProperty(PROP_PROXYURL);
+        proxy_user = properties.getProperty(PROP_PROXYUSER);
+        proxy_pass = properties.getProperty(PROP_PROXYPASS);
+
 
         if (properties.containsKey(PROP_TYPE)) {
             outType = properties.getProperty(PROP_TYPE);
@@ -90,114 +98,63 @@ public class Main {
             project = Optional.of(properties.getProperty( PROP_PROJECT ));
         }
 
-
-        String rally_key = properties.getProperty(PROP_APIKEY);
-        String proxy_url = properties.getProperty(PROP_PROXYURL);
-        String proxy_user = properties.getProperty(PROP_PROXYUSER);
-        String proxy_pass = properties.getProperty(PROP_PROXYPASS);
-
-
-        if (rally_key == null) {
-            System.err.println("Error:  environment variable RALLY_KEY not defined.  This must be set to the Rally API-Key for read only web services.");
-            System.exit(-1);
+        boolean useProxy = (proxy_url != null);
+        if (line.hasOption(OPTION_NOPROXY)) {
+            useProxy = false;
         }
-
-        String initiativeID = null;
 
         String outName = null;
         if (properties.containsKey(PROP_FILE)) {
             outName = properties.getProperty(PROP_FILE);
         }
 
-        List<RallyNode> storiesInReleaseList = null;
-        List<RallyNode> defectsInReleaseList = null;
-        RallyNode initiative = null;
-        List<RallyNode> storiesUnderInitiativeList = null;
-        List<RallyNode> defectsUnderInitiativeList = null;
 
-        boolean useProxy = (proxy_url != null);
-        if (line.hasOption(OPTION_NOPROXY)) {
-            useProxy = false;
-        }
 
         try {
-            RallyRestApi restApi = new RallyRestApi(new URI("https://rally1.rallydev.com"), rally_key);
-            if (useProxy) {
-                if (proxy_user != null && proxy_pass != null) {
-                    restApi.setProxy(new URI(proxy_url), proxy_user, proxy_pass);
-                }  {
-                    restApi.setProxy(new URI(proxy_url));
-                }
-            }
-
-            String releaseName = "";
-            if (properties.containsKey(PROP_RELEASE)) {
-                releaseName = properties.getProperty(PROP_RELEASE);
-                UserStoryFinder finder = new UserStoryFinder(restApi);
-                finder.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
-                finder.setRelease(releaseName);
-                finder.setProject( project );
-
-                storiesInReleaseList = finder.getStories();
-                defectsInReleaseList = finder.getDefects();
-            }
-
-            if (properties.containsKey(PROP_INITIATIVE)) {
-                initiativeID = properties.getProperty(PROP_INITIATIVE);
-                InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
-                walker.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
-                walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE)));  // Todo - add an option for includeNodesOutOfProject
-                initiative = walker.getInitiativeTree(initiativeID);
-                storiesUnderInitiativeList = walker.getStories();
-                defectsUnderInitiativeList = walker.getDefects();
-            }
-
-            /*
-            if (line.hasOption(OPTION_LIST)) {
-                QueryResponse response = restApi.query(RallyQueryFactory.getProjects());
-                if (response.wasSuccessful()) {
-                    JsonArray jsonElements = response.getResults();
-                    for (JsonElement element : jsonElements) {
-                        String name = element.getAsJsonObject().get("Name").getAsString();
-                        String state = element.getAsJsonObject().get("State").getAsString();
-                        String description = element.getAsJsonObject().get("Description").getAsString();
-                        JsonElement parentEl = element.getAsJsonObject().get("Parent");
-                        String parentName = parentEl.isJsonNull() ? "" : parentEl.getAsJsonObject().get("Name").getAsString();
-                        int childCount = element.getAsJsonObject().get("Children").getAsJsonObject().get("Count").getAsInt();
-                        System.out.format("%s - %s (%d) : %s\n", state, name, childCount, parentName);
-                    }
-                }
-            }
-            */
-
-            // statistics
-            StoryStats stats = new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList, initiative, releaseName);
-            stats.printStats();
 
             if (outType != null) {
-                if (outType.equalsIgnoreCase("xmind") && (initiative!=null)) {
-                    XMindWriter xwriter = new XMindWriter(outName, stats.getStoriesInRelease());
-                    RallyNodeWalker walker = new RallyNodeWalker(xwriter);
-                    walker.walk(initiative, null, 1);
-                    xwriter.addOrphans(stats.getStoriesNotInInitiative());
-                    xwriter.save();
+                if (outType.equalsIgnoreCase("xmind")) {
+                    StoryStats stats = getStoryStats(properties, project, useProxy);
+                    stats.printStats();
+                    if (stats.getInitiative()!=null) {
+                        XMindWriter xwriter = new XMindWriter(outName, stats.getStoriesInRelease());
+                        RallyNodeWalker walker = new RallyNodeWalker(xwriter);
+                        walker.walk(stats.getInitiative(), null, 1);
+                        xwriter.addOrphans(stats.getStoriesNotInInitiative());
+                        xwriter.save();
+                    }
                 } else if (outType.equalsIgnoreCase("html")) {
+                    StoryStats stats = getStoryStats(properties, project, useProxy);
+                    stats.printStats();
+
                     HTMLWriter htmlWriter = new HTMLWriter(new FileWriter(HTMLWriter.ensureExtention(outName, "Report.html")), stats);
                     RallyNodeWalker walker = new RallyNodeWalker(htmlWriter);
-                    walker.walk(initiative, Boolean.TRUE, 1);
+                    walker.walk(stats.getInitiative(), Boolean.TRUE, 1);
                     htmlWriter.close();
                 } else if (outType.equalsIgnoreCase("word")) {
+                    StoryStats stats = getStoryStats(properties, project, useProxy);
+                    stats.printStats();
+
                     WordWriter wordWriter = new WordWriter(outName, stats);
                     RallyNodeWalker walker = new RallyNodeWalker(wordWriter);
-                    walker.walk(initiative, Boolean.TRUE, 1);
+                    walker.walk(stats.getInitiative(), Boolean.TRUE, 1);
                     wordWriter.save();
                 } else if (outType.equalsIgnoreCase("excel")) {
+                    StoryStats stats = getStoryStats(properties, project, useProxy);
+                    stats.printStats();
+
                     ExcelStoryWriter excelStoryWriter = new ExcelStoryWriter(stats);
                     excelStoryWriter.write(outName);
                 } else if (outType.equalsIgnoreCase("check")) {
+                    StoryStats stats = getStoryStats(properties, project, useProxy);
+                    stats.printStats();
+
                     ExcelIssueWriter issueWriter = new ExcelIssueWriter(stats);
                     issueWriter.write(outName);
                 } else if (outType.equalsIgnoreCase("miro")) {
+                    StoryStats stats = getStoryStats(properties, project, useProxy);
+                    stats.printStats();
+
                     if (properties.containsKey(PROP_MIRO_UPDATE_BOARD) && properties.containsKey(PROP_MIRO_UPDATE_FRAME)) {
                         MiroUpdater updater = new MiroUpdater(stats, properties.getProperty( PROP_MIRO_TOKEN ),
                               properties.getProperty( PROP_MIRO_UPDATE_BOARD),
@@ -235,6 +192,78 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static StoryStats getStoryStats(Properties properties, Optional<String> project, boolean useProxy) throws IOException, URISyntaxException {
+        String rally_key = properties.getProperty(PROP_APIKEY);
+
+
+        if (rally_key == null) {
+            System.err.println("Error:  environment variable RALLY_KEY not defined.  This must be set to the Rally API-Key for read only web services.");
+            System.exit(-1);
+        }
+
+        String initiativeID = null;
+
+        List<RallyNode> storiesInReleaseList = null;
+        List<RallyNode> defectsInReleaseList = null;
+        RallyNode initiative = null;
+        List<RallyNode> storiesUnderInitiativeList = null;
+        List<RallyNode> defectsUnderInitiativeList = null;
+
+
+
+        RallyRestApi restApi = new RallyRestApi(new URI("https://rally1.rallydev.com"), rally_key);
+        if (useProxy) {
+            if (proxy_user != null && proxy_pass != null) {
+                restApi.setProxy(new URI(proxy_url), proxy_user, proxy_pass);
+            }  {
+                restApi.setProxy(new URI(proxy_url));
+            }
+        }
+
+        String releaseName = "";
+        if (properties.containsKey(PROP_RELEASE)) {
+            releaseName = properties.getProperty(PROP_RELEASE);
+            UserStoryFinder finder = new UserStoryFinder(restApi);
+            finder.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
+            finder.setRelease(releaseName);
+            finder.setProject( project );
+
+            storiesInReleaseList = finder.getStories();
+            defectsInReleaseList = finder.getDefects();
+        }
+
+        if (properties.containsKey(PROP_INITIATIVE)) {
+            initiativeID = properties.getProperty(PROP_INITIATIVE);
+            InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
+            walker.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
+            walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE)));  // Todo - add an option for includeNodesOutOfProject
+            initiative = walker.getInitiativeTree(initiativeID);
+            storiesUnderInitiativeList = walker.getStories();
+            defectsUnderInitiativeList = walker.getDefects();
+        }
+
+        /*
+        if (line.hasOption(OPTION_LIST)) {
+            QueryResponse response = restApi.query(RallyQueryFactory.getProjects());
+            if (response.wasSuccessful()) {
+                JsonArray jsonElements = response.getResults();
+                for (JsonElement element : jsonElements) {
+                    String name = element.getAsJsonObject().get("Name").getAsString();
+                    String state = element.getAsJsonObject().get("State").getAsString();
+                    String description = element.getAsJsonObject().get("Description").getAsString();
+                    JsonElement parentEl = element.getAsJsonObject().get("Parent");
+                    String parentName = parentEl.isJsonNull() ? "" : parentEl.getAsJsonObject().get("Name").getAsString();
+                    int childCount = element.getAsJsonObject().get("Children").getAsJsonObject().get("Count").getAsInt();
+                    System.out.format("%s - %s (%d) : %s\n", state, name, childCount, parentName);
+                }
+            }
+        }
+        */
+
+            // statistics
+        return new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList, initiative, releaseName);
     }
 
     private static Properties getOptions(CommandLine line) {
