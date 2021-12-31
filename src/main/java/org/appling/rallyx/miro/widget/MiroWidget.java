@@ -21,6 +21,11 @@ public class MiroWidget
    public double getTop()        { return y - (getRealHeight()/2); }
    public double getBottom()     { return y + (getRealHeight()/2); }
 
+   public double getX() { return x; }
+   public void setX(double x) { this.x = x; }
+   public double getY() { return y; }
+   public void setY(double y) { this.y = y; }
+
    @Override
    public String toString()
    {
