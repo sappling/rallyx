@@ -180,25 +180,29 @@ public class MiroWriter
 
    protected void handleNode(RallyNode node, @Nullable String widgetId ) throws IOException
    {
-      if (node.isInitiative()) {} // intentionally ignore
-      else if (node.hasTag( Tags.MMF )) {
-         if (shouldAddNode( node )) {
-            writeMMF( node, widgetId );
+      try {
+         if (node.isInitiative()) {
+         } // intentionally ignore
+         else if (node.hasTag(Tags.MMF)) {
+            if (shouldAddNode(node)) {
+               writeMMF(node, widgetId);
+            }
+         } else if (node.isFeature()) {
+            if (shouldAddNode(node)) {
+               writeNonMMFFeature(node, widgetId);
+            }
+         } else if (node.isUserStory()) {
+            if (shouldAddNode(node)) {
+               boolean inRelease = node.hasChildren() || stats.getReleaseName().equals(node.getRelease()); //stats.getStoriesInRelease().contains( node );
+               writeNonMMFStory(node, inRelease, widgetId);
+            }
+         } else if (node.isDefect()) {
+            if (shouldAddNode(node)) {
+               writeDefect(node, true, widgetId);   //todo - how to handle in release
+            }
          }
-      }
-      else if (node.isFeature()) {
-         if (shouldAddNode(node)) {
-            writeNonMMFFeature(node, widgetId);
-         }
-      } else if (node.isUserStory()) {
-         if (shouldAddNode( node )) {
-            boolean inRelease = node.hasChildren() || stats.getReleaseName().equals(node.getRelease()); //stats.getStoriesInRelease().contains( node );
-            writeNonMMFStory( node, inRelease, widgetId );
-         }
-      } else if (node.isDefect()) {
-         if (shouldAddNode(node)) {
-            writeDefect(node, true, widgetId);   //todo - how to handle in release
-         }
+      } catch (IOException ex) {
+         System.err.println(ex.getMessage());
       }
    }
 

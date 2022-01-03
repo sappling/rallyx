@@ -1,9 +1,6 @@
 package org.appling.rallyx.miro;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -65,6 +62,9 @@ public class MiroConnector
          widget.parentFrameId = targetFrame;
       }
       String newContent = gson.toJson( widget );
+//      newContent = newContent.replaceAll("\\\\u003e",">");
+//      newContent = newContent.replaceAll("\\\\u003c","<");
+//      newContent = newContent.replaceAll("\\\\u0026","&");
 
        Request request = Request.Post( "https://api.miro.com/v1/boards/" + boardId + "/widgets" )
             .addHeader( "Authorization", "Bearer " + authToken )
@@ -182,8 +182,18 @@ public class MiroConnector
       StatusLine statusLine = httpResponse.getStatusLine();
       if (statusLine.getStatusCode() > 201) {
 
+         ErrorResponse errorResponse;
          String resultString = EntityUtils.toString(httpResponse.getEntity());
-         ErrorResponse errorResponse = gson.fromJson( resultString, ErrorResponse.class);
+         try {
+            errorResponse = gson.fromJson(resultString, ErrorResponse.class);
+         } catch (JsonSyntaxException ex) {
+            if (resultString.contains("to hack us?")) {
+              throw new IOException("Rally content triggered Miro's hack detection.  Skipping item: "+errorContextMessage);
+            } else {
+               throw new IOException("Unexpected content in Miro error response: "+errorContextMessage);
+            }
+            //System.out.println("Unexpected content in error response:"+resultString);
+         }
 
          if (errorResponse.message != null) {
             if (errorResponse.message.contains("rate limit exceed")) {

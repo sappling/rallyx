@@ -69,7 +69,7 @@ public class CardFields
    public void addFieldsToCard( MiroCard card, RallyNode node )
    {
       if (node.isDefect()) {
-         card.addCustomField(new CustomField("Defect", "https://cdn.imgbin.com/3/0/15/imgbin-software-bug-bug-WQF2cN5hSmKNTvrwr1aRKEEBf.jpg"));
+         card.addCustomField(new CustomField("Defect", null));//"https://cdn.imgbin.com/3/0/15/imgbin-software-bug-bug-WQF2cN5hSmKNTvrwr1aRKEEBf.jpg"));
 
       }
       if (showSize)
