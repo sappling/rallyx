@@ -2,6 +2,7 @@ package org.appling.rallyx.miro;
 
 import org.appling.rallyx.miro.widget.*;
 import org.appling.rallyx.rally.RallyNode;
+import org.appling.rallyx.rally.RallyOptions;
 import org.appling.rallyx.rally.StoryStats;
 import org.appling.rallyx.rally.Tags;
 import org.docx4j.wml.P;
@@ -25,25 +26,25 @@ public class MiroWriter
    protected final String targetId;
    private final HashSet<RallyNode> ignore;
    private MiroWidget target;
+   private RallyOptions rallyOptions;
 
    private double currentX = 0;
    private double currentY = 0;
    private double ySpacing = 20;
    private double xSpacing = 20;
    private Optional<RallyNode>lastNode = Optional.empty();
-   private boolean writeInP = false;
 
-
-   public MiroWriter(StoryStats stats, String authToken, String boardId, String targetId, String fieldsToShow, HashSet<RallyNode> ignore) {
+   public MiroWriter(StoryStats stats, String authToken, String boardId, String targetId, String fieldsToShow, String rallyOptionString, HashSet<RallyNode> ignore) {
       connector = new MiroConnector( authToken, boardId );
       this.ignore = ignore;
       this.targetId = targetId;
       //connector.setTargetFrame( frameId );
       cardFields = new CardFields( fieldsToShow );
+      rallyOptions = new RallyOptions(rallyOptionString);
       this.stats = stats;
       mmfNodes = stats.getNodesWithTag( Tags.MMF );
       bugHolderNodes = stats.getNodesWithTag(Tags.BUGHOLDER);
-      nonMMFStories = stats.getAllStories().stream().filter( n -> !(n.hasTag( Tags.MMF ) || n.hasTag(Tags.BUGHOLDER)) ).collect( Collectors.toSet() );
+      nonMMFStories = stats.getAllStories().stream().filter( n -> !(n.hasTag( Tags.MMF ) || (rallyOptions.isHideBugHolder() && n.hasTag(Tags.BUGHOLDER)) ) ).collect( Collectors.toSet() );
       if (stats.getInitiative() != null) {
          nonMMFFeatures = stats.getInitiative().getChildren().stream().filter(n -> !n.hasTag(Tags.MMF)).collect(Collectors.toSet());
       } else {
@@ -156,7 +157,7 @@ public class MiroWriter
    {
       if (node != null) {
          ArrayList<RallyNode> mmfStories = new ArrayList<>();
-         if (!node.hasTag(Tags.BUGHOLDER)) {
+         if (!(rallyOptions.isHideBugHolder() && node.hasTag(Tags.BUGHOLDER))) {
             handleNode(node, null);
          }
          List<RallyNode> defects = node.getDefects();
@@ -289,7 +290,7 @@ public class MiroWriter
       if (cardFields.isShowUnassigned() && !node.hasChildren() && node.getDefects().isEmpty() && (node.getIteration() == null)) {
          text += " <span style=\"color:red\">Unassigned</span>";
       }
-      if (writeInP && node.hasTag(Tags.IPPREP)) {
+      if (cardFields.isShowIPPrep() && node.hasTag(Tags.IPPREP)) {
          text += " <span style=\"color:red\">I&P Prep</span> ";      // Highlight things to discuss in I&P
       }
       MiroSticker widget = new MiroSticker( text );
@@ -306,7 +307,7 @@ public class MiroWriter
    private void writeNonMMFFeature( RallyNode node, @Nullable String widgetId) throws IOException
    {
       String text = getLinkToNode( node )+ node.getName();
-      if (writeInP && node.hasTag(Tags.IPPREP)) {
+      if (cardFields.isShowIPPrep() && node.hasTag(Tags.IPPREP)) {
          text += " <span style=\"color:red\">I&P Prep</span> ";      // Highlight things to discuss in I&P
       }
       MiroSticker widget = new MiroSticker( text );

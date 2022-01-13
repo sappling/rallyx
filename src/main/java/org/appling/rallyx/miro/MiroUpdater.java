@@ -10,8 +10,8 @@ import java.util.*;
 public class MiroUpdater extends MiroWriter {
    private final HashSet<RallyNode> updatedNodes = new HashSet<>();
 
-   public MiroUpdater(StoryStats stats, String authToken, String boardId, String targetId, String fieldsToShow) {
-      super(stats, authToken, boardId, targetId, fieldsToShow, new HashSet<>());
+   public MiroUpdater(StoryStats stats, String authToken, String boardId, String targetId, String fieldsToShow, String rallyOptions) {
+      super(stats, authToken, boardId, targetId, fieldsToShow, rallyOptions, new HashSet<>());
    }
 
    public void update() throws IOException {

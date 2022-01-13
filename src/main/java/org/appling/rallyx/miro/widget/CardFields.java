@@ -15,6 +15,7 @@ public class CardFields
    private static final String FIELD_NOT_IN_RELEASE = "notinrelease";
    private static final String FIELD_UNASSIGNED = "unassigned";
    private static final String FIELD_COMPACTMMF = "compactmmf";
+   private static final String FIELD_IPPREP = "ipprep";
 
    private boolean showSize = false;
    private boolean showIteration = false;
@@ -24,7 +25,7 @@ public class CardFields
    private boolean showNotInRelease = false;
    private boolean showUnassigned = false;
    private boolean compactMMF = false;
-   private boolean showInP = false;
+   private boolean showIPPrep = false;
 
 
 
@@ -61,6 +62,9 @@ public class CardFields
             }
             if (FIELD_COMPACTMMF.equalsIgnoreCase(option)) {
                compactMMF = true;
+            }
+            if (FIELD_IPPREP.equalsIgnoreCase(option)) {
+               showIPPrep = true;
             }
          }
       }
@@ -128,8 +132,8 @@ public class CardFields
             !((node.getPlanEstimate() == 0f) && (node.getNumberOfDefects() > 0))) {    // not a placholder story for defects
          card.addCustomField(new CustomField("Unassigned", null, "#f24726"));
       }
-      if (showInP && node.hasTag(Tags.IPPREP)) {
-         card.addCustomField(new CustomField("I&P Prep", null, "#E00000"));
+      if (showIPPrep && node.hasTag(Tags.IPPREP)) {
+         card.addCustomField(new CustomField("I&P Prep", null, "#E05050"));
       }
 
    }
@@ -212,4 +216,6 @@ public class CardFields
    public boolean isShowUnassigned() { return showUnassigned; }
 
    public boolean isCompactMMF() { return  compactMMF; }
+
+   public boolean isShowIPPrep() { return showIPPrep; }
 }

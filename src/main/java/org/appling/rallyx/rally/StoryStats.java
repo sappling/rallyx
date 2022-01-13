@@ -22,10 +22,12 @@ public class StoryStats {
     private Set<RallyNode> allDefects = new HashSet<>();
     private HashMap<String,RallyNode> allNodesByFormattedId = new HashMap<>();
     private String releaseName;
+    private boolean hideBugHolder;
 
     private RallyNode initiative;
 
-    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, @Nullable List<RallyNode> defectsInReleaseList, @Nullable List<RallyNode> defectsUnderInitiativeList, RallyNode initiative, String releaseName) {
+    public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, @Nullable List<RallyNode> defectsInReleaseList, @Nullable List<RallyNode> defectsUnderInitiativeList,
+                      boolean hideBugHolder, RallyNode initiative, String releaseName) {
         this.initiative = initiative;
         this.releaseName = releaseName;
         if (storiesInReleaseList != null) {
@@ -40,6 +42,7 @@ public class StoryStats {
         if (defectsUnderInitiativeList != null) {
             defectsUnderInitiative = new HashSet<>(defectsUnderInitiativeList);
         }
+        this.hideBugHolder = hideBugHolder;
         calculateSets();
     }
 
@@ -119,12 +122,18 @@ public class StoryStats {
 
     public void printStats() {
         int totalStoriesNotInProject = getStoriesNotInProject().size();
-        System.out.format("%d stories total\n", allStories.size());
-        if (totalStoriesNotInProject > 0) {
-            System.out.format("%d stories were in the project and %d were not\n", allStories.size() - totalStoriesNotInProject, totalStoriesNotInProject);
-        }
+//        System.out.format("%d stories total\n", allStories.size());
+//        if (totalStoriesNotInProject > 0) {
+//            System.out.format("%d stories were in the project and %d were not\n", allStories.size() - totalStoriesNotInProject, totalStoriesNotInProject);
+//        }
+        System.out.format("%d stories total\n", allStories.size() - getStoriesNotInProject().size());
         System.out.format("%d stories not in initiative\n", storiesNotInInitiative.size());
+        /*
         System.out.format("%d stories not in specified release\n", storiesNotInRelease.size());
+        if (storiesNotInRelease.size() > 0) {
+            System.out.println("   "+storiesNotInRelease.stream().map(RallyNode::getFormattedId).collect(Collectors.joining(",")));
+        }
+        */
         System.out.format("%d stories in no release\n", storiesInNoRelease.size());
         System.out.format("%d defects in total\n", allDefects.size());
     }
@@ -171,10 +180,10 @@ public class StoryStats {
     }
 
 
-    private static Set<RallyNode> removeParents(Set<RallyNode> set) {
+    private Set<RallyNode> removeParents(Set<RallyNode> set) {
         HashSet<RallyNode> results = new HashSet<>();
         for (RallyNode rallyNode : set) {
-            if (!rallyNode.hasChildren()) {
+            if (!rallyNode.hasChildren() && !(hideBugHolder && rallyNode.hasTag(Tags.BUGHOLDER))) {
                 results.add(rallyNode);
             }
         }

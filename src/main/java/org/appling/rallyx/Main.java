@@ -54,6 +54,7 @@ public class Main {
     private static final String PROP_MIRO_UPDATE_BOARD = "miro.update.board";
     private static final String PROP_MIRO_UPDATE_FRAME = "miro.update.frame";
     private static final String PROP_MIRO_CARD_SHOW = "miro.card.show";
+    private static final String PROP_RALLY_OPTIONS = "rally.options";
 
 
     private static Options options = setupOptions();
@@ -113,9 +114,9 @@ public class Main {
         try {
 
             if (outType != null) {
+                StoryStats stats = getStoryStats(properties, project, useProxy);
+                stats.printStats();
                 if (outType.equalsIgnoreCase("xmind")) {
-                    StoryStats stats = getStoryStats(properties, project, useProxy);
-                    stats.printStats();
                     if (stats.getInitiative()!=null) {
                         XMindWriter xwriter = new XMindWriter(outName, stats.getStoriesInRelease());
                         RallyNodeWalker walker = new RallyNodeWalker(xwriter);
@@ -124,42 +125,28 @@ public class Main {
                         xwriter.save();
                     }
                 } else if (outType.equalsIgnoreCase("html")) {
-                    StoryStats stats = getStoryStats(properties, project, useProxy);
-                    stats.printStats();
-
                     HTMLWriter htmlWriter = new HTMLWriter(new FileWriter(HTMLWriter.ensureExtention(outName, "Report.html")), stats);
                     RallyNodeWalker walker = new RallyNodeWalker(htmlWriter);
                     walker.walk(stats.getInitiative(), Boolean.TRUE, 1);
                     htmlWriter.close();
                 } else if (outType.equalsIgnoreCase("word")) {
-                    StoryStats stats = getStoryStats(properties, project, useProxy);
-                    stats.printStats();
-
                     WordWriter wordWriter = new WordWriter(outName, stats);
                     RallyNodeWalker walker = new RallyNodeWalker(wordWriter);
                     walker.walk(stats.getInitiative(), Boolean.TRUE, 1);
                     wordWriter.save();
                 } else if (outType.equalsIgnoreCase("excel")) {
-                    StoryStats stats = getStoryStats(properties, project, useProxy);
-                    stats.printStats();
-
                     ExcelStoryWriter excelStoryWriter = new ExcelStoryWriter(stats);
                     excelStoryWriter.write(outName);
                 } else if (outType.equalsIgnoreCase("check")) {
-                    StoryStats stats = getStoryStats(properties, project, useProxy);
-                    stats.printStats();
-
                     ExcelIssueWriter issueWriter = new ExcelIssueWriter(stats);
                     issueWriter.write(outName);
                 } else if (outType.equalsIgnoreCase("miro")) {
-                    StoryStats stats = getStoryStats(properties, project, useProxy);
-                    stats.printStats();
-
                     if (properties.containsKey(PROP_MIRO_UPDATE_BOARD) && properties.containsKey(PROP_MIRO_UPDATE_FRAME)) {
                         MiroUpdater updater = new MiroUpdater(stats, properties.getProperty( PROP_MIRO_TOKEN ),
                               properties.getProperty( PROP_MIRO_UPDATE_BOARD),
                               properties.getProperty( PROP_MIRO_UPDATE_FRAME ),
-                              properties.getProperty( PROP_MIRO_CARD_SHOW ));
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ),
+                              properties.getProperty( PROP_RALLY_OPTIONS) );
                         if (proxy_url != null) {
                             updater.setProxy(proxy_url, proxy_user, proxy_pass);
                         }
@@ -169,7 +156,9 @@ public class Main {
                         MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
                               properties.getProperty( PROP_MIRO_BOARD),
                               properties.getProperty( PROP_MIRO_FRAME ),
-                              properties.getProperty( PROP_MIRO_CARD_SHOW ), updater.getUpdatedNodes());
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ),
+                              properties.getProperty( PROP_RALLY_OPTIONS),
+                              updater.getUpdatedNodes());
                         if (proxy_url != null) {
                             cardWriter.setProxy(proxy_url, proxy_user, proxy_pass);
                         }
@@ -180,7 +169,9 @@ public class Main {
                         MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
                               properties.getProperty( PROP_MIRO_BOARD),
                               properties.getProperty( PROP_MIRO_FRAME ),
-                              properties.getProperty( PROP_MIRO_CARD_SHOW ), new HashSet<>());
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ),
+                              properties.getProperty(PROP_RALLY_OPTIONS),
+                              new HashSet<>());
                         if (proxy_url != null) {
                             cardWriter.setProxy(proxy_url, proxy_user, proxy_pass);
                         }
@@ -262,8 +253,14 @@ public class Main {
         }
         */
 
+        boolean hideBugHolder = false;
+        if (properties.containsKey(PROP_RALLY_OPTIONS)) {
+            RallyOptions options = new RallyOptions(properties.getProperty(PROP_RALLY_OPTIONS));
+            hideBugHolder = options.isHideBugHolder();
+        }
             // statistics
-        return new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList, initiative, releaseName);
+        return new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList,
+              hideBugHolder, initiative, releaseName);
     }
 
     private static Properties getOptions(CommandLine line) {
@@ -374,7 +371,7 @@ public class Main {
         options.addOption(Option.builder(OPTION_RELEASE).longOpt(PROP_RELEASE)
                 .desc("Release (like \"some release\") - REQUIRED").numberOfArgs(1)
                 .optionalArg(false).argName("name").build());
-        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, word, check, miro)")
+        options.addOption(Option.builder(OPTION_TYPE).longOpt(PROP_TYPE).desc("type of output (xmind, excel, word, check, miro, count)")
                 .numberOfArgs(1).optionalArg(false).argName("filetype").build());
         options.addOption(OPTION_NOPROXY, false, "disable proxy use even if env var set");
         options.addOption(Option.builder(OPTION_FILE).longOpt(PROP_FILE).desc("output filename")
