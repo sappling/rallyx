@@ -13,8 +13,11 @@ import java.util.*;
  * Created by sappling on 7/21/2017.
  */
 public class UserStoryFinder {
+    private static final String INP_ITERATION_SEARCH = "I&P";
+
     private RallyRestApi restApi;
     private String releaseName;
+    private boolean skipInP = false;
     private boolean findComplete = true;
     private Optional<String> project = Optional.empty();
 
@@ -27,6 +30,7 @@ public class UserStoryFinder {
     public void setFindComplete(boolean findComplete) {
         this.findComplete = findComplete;
     }
+    public void setSkipInP(boolean skipInP) { this.skipInP = skipInP; }
 
     public void setProject(Optional<String> project) { this.project = project; }
 
@@ -38,11 +42,17 @@ public class UserStoryFinder {
             JsonArray jsonElements = response.getResults();
             for (JsonElement element : jsonElements) {
                 RallyNode next = new RallyNode(element.getAsJsonObject(), null, null, null );
+                if (skipInP) {
+
+                }
                 if (findComplete == false) {
                     ScheduleState scheduleState = next.getScheduleState();
                     if ((scheduleState == ScheduleState.Completed) || (scheduleState == ScheduleState.Accepted)) {
                         continue;
                     }
+                }
+                if (skipInP && isInInP(next)) {
+                    continue;
                 }
                 result.add(next);
             }
@@ -63,6 +73,9 @@ public class UserStoryFinder {
                     if ((defectState == DefectState.Closed) || (defectState == DefectState.Fixed)) {
                         continue;
                     }
+                }
+                if (skipInP && isInInP(next)) {
+                    continue;
                 }
                 result.add(next);
             }
@@ -87,5 +100,14 @@ public class UserStoryFinder {
         } else {
             return project;
         }
+    }
+
+    public static boolean isInInP(RallyNode node) {
+        boolean result = false;
+        Iteration iteration = node.getIteration();
+        if (iteration!=null && iteration.getName().contains("I&P")) {
+            result = true;
+        }
+        return result;
     }
 }

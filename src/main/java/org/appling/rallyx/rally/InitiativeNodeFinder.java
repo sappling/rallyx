@@ -20,6 +20,8 @@ public class InitiativeNodeFinder {
     private ArrayList<RallyNode> defects = new ArrayList<>();
 
     private boolean findComplete = true;
+    private boolean skipInP = false;
+
     private Optional<String> project = Optional.empty();
     private boolean includParentsOutOfProject = true;
 
@@ -30,6 +32,7 @@ public class InitiativeNodeFinder {
     public void setFindComplete(boolean findComplete) {
         this.findComplete = findComplete;
     }
+    public void setSkipInP(boolean skipInP) { this.skipInP = skipInP; }
 
     public void setProject(Optional<String> project, boolean includeParentsOutOfProject) {
         this.project = project;
@@ -132,6 +135,9 @@ public class InitiativeNodeFinder {
                     result = false;
                 }
             }
+        }
+        if (skipInP && UserStoryFinder.isInInP(next)) {
+            result = false;
         }
         if (project.isPresent()) {
             if (!next.getProject().getName().equals( project.get() ) ) {
