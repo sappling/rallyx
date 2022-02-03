@@ -19,7 +19,7 @@ public class MiroUpdater extends MiroWriter {
 
       HashMap<String,MiroWidget> foundWidgets = new HashMap<>();
       for (String child : frame.children) {
-         MiroWidget widget = connector.getWidget(child, false);
+         MiroWidget widget = connector.getWidget(sanitizeFrameChild(child), false);
          FoundWidget w = new FoundWidget(widget);
          if (w.hasRallyId()) {
             foundWidgets.put(w.getRallyId(), widget);
@@ -37,6 +37,19 @@ public class MiroUpdater extends MiroWriter {
             System.out.println("Card with id of'"+nextEntry.getKey()+"' found, but may have been removed in Rally");
          }
       }
+   }
+
+   /*
+   A bug was introduced in Miro's V1 REST API in early February 2022.
+   Instead of returning an array of the IDs of each child of the frame, the children array contains entries that look like:
+   WidgetId(value=3458764517398979354)
+    */
+   private String sanitizeFrameChild(String child) {
+      String result = child;
+      if (child.startsWith("WidgetId")) {
+         result = child.substring(15, child.length()-1);
+      }
+      return result;
    }
 
    @Override
