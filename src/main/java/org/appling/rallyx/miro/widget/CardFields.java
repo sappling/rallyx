@@ -131,6 +131,7 @@ public class CardFields
             !node.hasChildren() &&  // Not an epic
             !((node.getPlanEstimate() == 0f) && (node.getNumberOfDefects() > 0))) {    // not a placholder story for defects
          card.addCustomField(new CustomField("Unassigned", null, "#f24726"));
+         card.style = new MiroCardStyle( "#f24726" );
       }
       if (showIPPrep && node.hasTag(Tags.IPPREP)) {
          card.addCustomField(new CustomField("I&P Prep", null, "#E05050"));

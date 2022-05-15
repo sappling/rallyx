@@ -344,10 +344,10 @@ public class MiroWriter
          description = "Description Too Long. View description in Rally.";
       }
 
-      cardFields.addFieldsToCard(card, node);
-
       card.description = description;
       card.style = new MiroCardStyle( StickerColors.ORANGE);
+      cardFields.addFieldsToCard(card, node);
+
 
       updateWidgetPosition(card);
       MiroWidget newCard = handleWidget( card, node);
