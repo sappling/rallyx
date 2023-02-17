@@ -73,6 +73,10 @@ public class UserStoryFinder {
                     if ((defectState == DefectState.Closed) || (defectState == DefectState.Fixed)) {
                         continue;
                     }
+                    ScheduleState scheduleState = next.getScheduleState();
+                    if ((scheduleState == ScheduleState.Accepted) || (scheduleState == ScheduleState.Completed)){
+                        continue;
+                    }
                 }
                 if (skipInP && isInInP(next)) {
                     continue;

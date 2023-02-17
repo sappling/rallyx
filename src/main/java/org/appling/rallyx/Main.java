@@ -217,7 +217,7 @@ public class Main {
         if (properties.containsKey(PROP_RELEASE)) {
             releaseName = properties.getProperty(PROP_RELEASE);
             UserStoryFinder finder = new UserStoryFinder(restApi);
-            finder.setSkipInP(true);    //todo - use rally option
+            //finder.setSkipInP(true);    //todo - use rally option
             finder.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
             finder.setRelease(releaseName);
             finder.setProject( project );
@@ -229,7 +229,7 @@ public class Main {
         if (properties.containsKey(PROP_INITIATIVE)) {
             initiativeID = properties.getProperty(PROP_INITIATIVE);
             InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
-            walker.setSkipInP(true);    //todo - use rally option
+            //walker.setSkipInP(true);    //todo - use rally option
             walker.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
             walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE)));  // Todo - add an option for includeNodesOutOfProject
             initiative = walker.getInitiativeTree(initiativeID);
