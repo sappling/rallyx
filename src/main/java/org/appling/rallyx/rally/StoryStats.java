@@ -18,17 +18,18 @@ public class StoryStats {
     private Set<RallyNode> defectsNotInInitiative = new HashSet<>();
     private Set<RallyNode> storiesNotInRelease = new HashSet<>();
     private Set<RallyNode> storiesInNoRelease = new HashSet<>();
+    private Set<RallyNode> defectsInNoRelease = new HashSet<>();
     private Set<RallyNode> allStories = new HashSet<>();
     private Set<RallyNode> allDefects = new HashSet<>();
     private HashMap<String,RallyNode> allNodesByFormattedId = new HashMap<>();
     private String releaseName;
     private boolean hideBugHolder;
 
-    private RallyNode initiative;
+    private List<RallyNode> initiatives;
 
     public StoryStats(@Nullable List<RallyNode> storiesInReleaseList, @Nullable List<RallyNode> storiesUnderInitiativeList, @Nullable List<RallyNode> defectsInReleaseList, @Nullable List<RallyNode> defectsUnderInitiativeList,
-                      boolean hideBugHolder, RallyNode initiative, String releaseName) {
-        this.initiative = initiative;
+                      boolean hideBugHolder, List<RallyNode> initiatives, String releaseName) {
+        this.initiatives = initiatives;
         this.releaseName = releaseName;
         if (storiesInReleaseList != null) {
             storiesInRelease = new HashSet<>(storiesInReleaseList);
@@ -46,14 +47,18 @@ public class StoryStats {
         calculateSets();
     }
 
-    public RallyNode getInitiative() {
-        return initiative;
+    public RallyNode getFirstInitiative() {
+        return initiatives.get(0);
+    }
+
+    public List<RallyNode> getInitiatives() {
+        return initiatives;
     }
     public String getReleaseName() { return releaseName; }
 
     public List<RallyNode> getFeatures() {
         ArrayList<RallyNode> features = new ArrayList<>();
-        if (initiative != null) {
+        for (RallyNode initiative : initiatives) {
             features.addAll(initiative.getChildren());
         }
         return features;
@@ -84,6 +89,9 @@ public class StoryStats {
     public Set<RallyNode> getStoriesNotInRelease() {
         return Collections.unmodifiableSet(storiesNotInRelease);
     }
+    public Set<RallyNode> getStoriesInNoRelease() {
+        return Collections.unmodifiableSet(storiesInNoRelease);
+    }
 
     public Set<RallyNode> getAllStories() {
         return Collections.unmodifiableSet(allStories);
@@ -94,6 +102,10 @@ public class StoryStats {
     }
     public Set<RallyNode> getDefectsInRelease() {
         return Collections.unmodifiableSet(defectsInRelease);
+    }
+
+    public Set<RallyNode> getDefectsInNoRelease() {
+        return Collections.unmodifiableSet(defectsInNoRelease);
     }
     public Set<RallyNode> getDefectsNotInInitiative() {
         return Collections.unmodifiableSet(defectsNotInInitiative);
@@ -113,7 +125,7 @@ public class StoryStats {
      */
     public Set<RallyNode> getNodesWithTag(String tag) {
         Set<RallyNode> result = new HashSet<>(  );
-        if (initiative != null) {
+        for (RallyNode initiative : initiatives) {
             result.addAll( initiative.getChildren().stream().filter( c -> c.hasTag( tag ) ).collect( Collectors.toSet() ));
         }
         result.addAll(getAllStories().stream().filter( c -> c.hasTag( tag ) ).collect( Collectors.toSet()));
@@ -166,11 +178,16 @@ public class StoryStats {
         allDefects = new HashSet<>(defectsUnderInitiative);
         allDefects.addAll(defectsNotInInitiative);
 
+        // find defects in no release
+        defectsInNoRelease = defectsUnderInitiative.stream()
+                .filter(s -> s.getRelease().isEmpty())
+                .collect(Collectors.toSet());
+
         // add to map of nodes by formatted ID
         allStories.forEach(this::updateFormattedIdMap);
         allDefects.forEach(this::updateFormattedIdMap);
         getFeatures().forEach(this::updateFormattedIdMap);
-        if (initiative!= null) {
+        for (RallyNode initiative : initiatives) {
             updateFormattedIdMap(initiative);
         }
     }

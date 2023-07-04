@@ -5,8 +5,6 @@ import org.appling.rallyx.rally.RallyNode;
 import org.appling.rallyx.rally.RallyOptions;
 import org.appling.rallyx.rally.StoryStats;
 import org.appling.rallyx.rally.Tags;
-import org.docx4j.wml.P;
-import org.docx4j.wml.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +19,7 @@ public class MiroWriter
    private final Set< RallyNode > mmfNodes;
    private final Set< RallyNode > bugHolderNodes;
    private final Set< RallyNode > nonMMFStories;
-   private final Set< RallyNode > nonMMFFeatures;
+   private final Set< RallyNode > nonMMFFeatures = new HashSet<>();
    private final CardFields cardFields;
    protected final String targetId;
    private final HashSet<RallyNode> ignore;
@@ -45,10 +43,8 @@ public class MiroWriter
       mmfNodes = stats.getNodesWithTag( Tags.MMF );
       bugHolderNodes = stats.getNodesWithTag(Tags.BUGHOLDER);
       nonMMFStories = stats.getAllStories().stream().filter( n -> !(n.hasTag( Tags.MMF ) || (rallyOptions.isHideBugHolder() && n.hasTag(Tags.BUGHOLDER)) ) ).collect( Collectors.toSet() );
-      if (stats.getInitiative() != null) {
-         nonMMFFeatures = stats.getInitiative().getChildren().stream().filter(n -> !n.hasTag(Tags.MMF)).collect(Collectors.toSet());
-      } else {
-         nonMMFFeatures = Collections.emptySet();
+      for (RallyNode initiative : stats.getInitiatives()) {
+         nonMMFFeatures.addAll(initiative.getChildren().stream().filter(n -> !n.hasTag(Tags.MMF)).collect(Collectors.toSet()));
       }
    }
 
@@ -130,11 +126,14 @@ public class MiroWriter
       initializeTarget();
       //Update to show progress on a single line like: u"\u001b[1000D" + str(i + 1) + "%"
 
-      walk( stats.getInitiative());
+      for (RallyNode initiative : stats.getInitiatives()) {
+         walk( initiative );
+      }
+
       Set< RallyNode > storiesNotInInitiative = stats.getStoriesNotInInitiative();
       Set<RallyNode> defectsNotInInitiative = stats.getDefectsNotInInitiative();
 
-      if (!storiesNotInInitiative.isEmpty() || !defectsNotInInitiative.isEmpty()) {
+      if (rallyOptions.isShowNotInInitiative() && (!storiesNotInInitiative.isEmpty() || !defectsNotInInitiative.isEmpty())) {
          MiroSticker widget = new MiroSticker("Not In Initiative");
 
          widget.style = new MiroStickerStyle(StickerColors.RED);
@@ -142,15 +141,34 @@ public class MiroWriter
          widget.scale = 1.07f;
          updateWidgetPosition(widget);
          connector.addWidget(widget, "Error adding Not In Initiative sticker", false);
+
+         for ( RallyNode node : storiesNotInInitiative ) {
+            handleNode( node, null, false);
+         }
+
+         for (RallyNode node: defectsNotInInitiative) {
+            handleNode(node, null, false);
+         }
       }
 
-      for ( RallyNode node : storiesNotInInitiative ) {
-         handleNode( node, null );
+      if (rallyOptions.isShowNotInAnyRelease() && (!stats.getStoriesInNoRelease().isEmpty() || !stats.getDefectsInNoRelease().isEmpty())) {
+         MiroSticker widget = new MiroSticker("Not In Any Release");
+
+         widget.style = new MiroStickerStyle(StickerColors.RED);
+         widget.setFeature(true);
+         widget.scale = 1.07f;
+         updateWidgetPosition(widget);
+         connector.addWidget(widget, "Error adding Not In Any Release sticker", false);
+
+         for ( RallyNode node : stats.getStoriesInNoRelease() ) {
+            handleNode( node, null, true);
+         }
+
+         for (RallyNode node: stats.getDefectsInNoRelease()) {
+            handleNode(node, null, true);
+         }
       }
 
-      for (RallyNode node: defectsNotInInitiative) {
-         handleNode(node, null);
-      }
    }
 
    private void walk(RallyNode node ) throws IOException
@@ -158,11 +176,11 @@ public class MiroWriter
       if (node != null) {
          ArrayList<RallyNode> mmfStories = new ArrayList<>();
          if (!(rallyOptions.isHideBugHolder() && node.hasTag(Tags.BUGHOLDER))) {
-            handleNode(node, null);
+            handleNode(node, null, false);
          }
          List<RallyNode> defects = node.getDefects();
          for (RallyNode defect : defects) {
-            handleNode(defect, null);
+            handleNode(defect, null, false);
          }
          List<RallyNode> children = node.getChildren();
          for (RallyNode child : children) {
@@ -179,26 +197,26 @@ public class MiroWriter
       }
    }
 
-   protected void handleNode(RallyNode node, @Nullable String widgetId ) throws IOException
+   protected void handleNode(RallyNode node, @Nullable String widgetId, boolean ignoreRelease) throws IOException
    {
       try {
          if (node.isInitiative()) {
          } // intentionally ignore
          else if (node.hasTag(Tags.MMF)) {
-            if (shouldAddNode(node)) {
+            if (shouldAddNode(node, ignoreRelease)) {
                writeMMF(node, widgetId);
             }
          } else if (node.isFeature()) {
-            if (shouldAddNode(node)) {
+            if (shouldAddNode(node, ignoreRelease)) {
                writeNonMMFFeature(node, widgetId);
             }
          } else if (node.isUserStory()) {
-            if (shouldAddNode(node)) {
+            if (shouldAddNode(node, ignoreRelease)) {
                boolean inRelease = node.hasChildren() || stats.getReleaseName().equals(node.getRelease()); //stats.getStoriesInRelease().contains( node );
                writeNonMMFStory(node, inRelease, widgetId);
             }
          } else if (node.isDefect()) {
-            if (shouldAddNode(node)) {
+            if (shouldAddNode(node, ignoreRelease)) {
                writeDefect(node, true, widgetId);   //todo - how to handle in release
             }
          }
@@ -214,21 +232,22 @@ public class MiroWriter
     * @param node
     * @return true if this node should be handled
     */
-   private boolean shouldAddNode(RallyNode node) {
+   private boolean shouldAddNode(RallyNode node, boolean ignoreRelease) {
       boolean result = true;
-      if (node.isUserStory() &&
-            stats.getReleaseSpecified() &&
-            !cardFields.isShowNotInRelease() &&
-            !node.hasChildren() &&
-            !(node.getNumberOfDefects() > 0) &&
-            !stats.getStoriesInRelease().contains( node )) {
+      if ( !ignoreRelease &&
+           stats.getReleaseSpecified() &&
+           !cardFields.isShowNotInRelease() &&
+           !node.hasSelfOrDescendentsInReleaseAndProject(stats.getReleaseName())) {
          result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
-      } else if (node.isOutOfProject()) {
+      }
+      /*
+      else if (node.isOutOfProject()) {
          if (!node.hasDescendentsInProject() &&
          !(node.getDefects().size() > 0)) {
             result = false;
          }
       }
+       */
       return result;
    }
 

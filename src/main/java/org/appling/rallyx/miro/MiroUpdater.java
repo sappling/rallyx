@@ -32,7 +32,7 @@ public class MiroUpdater extends MiroWriter {
          RallyNode node = stats.getNodeByFormattedId(nextEntry.getKey());
          if (node != null) {
             updatedNodes.add(node);
-            handleNode(node, nextEntry.getValue().id);
+            handleNode(node, nextEntry.getValue().id, false);
          } else {
             System.out.println("Card with id of'"+nextEntry.getKey()+"' found, but may have been removed in Rally");
          }

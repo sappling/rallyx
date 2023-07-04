@@ -208,6 +208,30 @@ public class RallyNode {
       return result;
    }
 
+   public boolean hasSelfOrDescendentsInReleaseAndProject(String release) {
+      boolean result = false;
+      if (children.isEmpty() && defects.isEmpty()) {
+         if (release.equalsIgnoreCase(getRelease()) && !isOutOfProject()) {
+            result = true;
+         }
+      }
+       else {
+         for (RallyNode child : children) {
+            if (child.hasSelfOrDescendentsInReleaseAndProject(release)) {
+               result = true;
+               break;
+            }
+         }
+         for (RallyNode defect : defects) {
+            if (defect.hasSelfOrDescendentsInReleaseAndProject(release)) {
+               result = true;
+               break;
+            }
+         }
+      }
+      return result;
+   }
+
    @NotNull
    public String getDescription() {
       return getStringField(FIELD_DESCRIPTION);

@@ -117,22 +117,22 @@ public class Main {
                 StoryStats stats = getStoryStats(properties, project, useProxy);
                 stats.printStats();
                 if (outType.equalsIgnoreCase("xmind")) {
-                    if (stats.getInitiative()!=null) {
+                    if (stats.getFirstInitiative()!=null) {
                         XMindWriter xwriter = new XMindWriter(outName, stats.getStoriesInRelease());
                         RallyNodeWalker walker = new RallyNodeWalker(xwriter);
-                        walker.walk(stats.getInitiative(), null, 1);
+                        walker.walk(stats.getFirstInitiative(), null, 1);
                         xwriter.addOrphans(stats.getStoriesNotInInitiative());
                         xwriter.save();
                     }
                 } else if (outType.equalsIgnoreCase("html")) {
                     HTMLWriter htmlWriter = new HTMLWriter(new FileWriter(HTMLWriter.ensureExtention(outName, "Report.html")), stats);
                     RallyNodeWalker walker = new RallyNodeWalker(htmlWriter);
-                    walker.walk(stats.getInitiative(), Boolean.TRUE, 1);
+                    walker.walk(stats.getFirstInitiative(), Boolean.TRUE, 1);
                     htmlWriter.close();
                 } else if (outType.equalsIgnoreCase("word")) {
                     WordWriter wordWriter = new WordWriter(outName, stats);
                     RallyNodeWalker walker = new RallyNodeWalker(wordWriter);
-                    walker.walk(stats.getInitiative(), Boolean.TRUE, 1);
+                    walker.walk(stats.getFirstInitiative(), Boolean.TRUE, 1);
                     wordWriter.save();
                 } else if (outType.equalsIgnoreCase("excel")) {
                     ExcelStoryWriter excelStoryWriter = new ExcelStoryWriter(stats);
@@ -194,13 +194,13 @@ public class Main {
             System.exit(-1);
         }
 
-        String initiativeID = null;
+        //String initiativeID = null;
 
         List<RallyNode> storiesInReleaseList = null;
         List<RallyNode> defectsInReleaseList = null;
-        RallyNode initiative = null;
-        List<RallyNode> storiesUnderInitiativeList = null;
-        List<RallyNode> defectsUnderInitiativeList = null;
+        List<RallyNode> initiatives = new ArrayList<>();
+        List<RallyNode> storiesUnderInitiativeList = new ArrayList<>();
+        List<RallyNode> defectsUnderInitiativeList = new ArrayList<>();
 
 
 
@@ -227,14 +227,17 @@ public class Main {
         }
 
         if (properties.containsKey(PROP_INITIATIVE)) {
-            initiativeID = properties.getProperty(PROP_INITIATIVE);
-            InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
-            //walker.setSkipInP(true);    //todo - use rally option
-            walker.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
-            walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE)));  // Todo - add an option for includeNodesOutOfProject
-            initiative = walker.getInitiativeTree(initiativeID);
-            storiesUnderInitiativeList = walker.getStories();
-            defectsUnderInitiativeList = walker.getDefects();
+            String[] initiativeNames = properties.getProperty(PROP_INITIATIVE).split(",");
+            for (String initiativeID : initiativeNames) {
+                InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
+                //walker.setSkipInP(true);    //todo - use rally option
+                walker.setFindComplete(!properties.containsKey(OPTION_INCOMPLETE));
+                walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE)));  // Todo - add an option for includeNodesOutOfProject
+                RallyNode initiativeTree = walker.getInitiativeTree(initiativeID);
+                initiatives.add(initiativeTree);
+                storiesUnderInitiativeList.addAll(walker.getStories());
+                defectsUnderInitiativeList.addAll(walker.getDefects());
+            }
         }
 
         /*
@@ -262,7 +265,7 @@ public class Main {
         }
             // statistics
         return new StoryStats(storiesInReleaseList, storiesUnderInitiativeList, defectsInReleaseList, defectsUnderInitiativeList,
-              hideBugHolder, initiative, releaseName);
+              hideBugHolder, initiatives, releaseName);
     }
 
     private static Properties getOptions(CommandLine line) {
