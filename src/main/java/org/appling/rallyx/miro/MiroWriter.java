@@ -140,7 +140,8 @@ public class MiroWriter
          widget.setFeature(true);
          widget.scale = 1.07f;
          updateWidgetPosition(widget);
-         connector.addWidget(widget, "Error adding Not In Initiative sticker", false);
+         MiroSticker result = connector.addWidget(widget, "Error adding Not In Initiative sticker", false);
+         connector.updateWidget(result, "Error updating Not In Initiative sticker", false);
 
          for ( RallyNode node : storiesNotInInitiative ) {
             handleNode( node, null, false);
@@ -158,7 +159,8 @@ public class MiroWriter
          widget.setFeature(true);
          widget.scale = 1.07f;
          updateWidgetPosition(widget);
-         connector.addWidget(widget, "Error adding Not In Any Release sticker", false);
+         MiroSticker result = connector.addWidget(widget, "Error adding Not In Any Release sticker", false);
+         connector.updateWidget(result, "Error updating Not In Any Release  sticker", false);
 
          for ( RallyNode node : stats.getStoriesInNoRelease() ) {
             handleNode( node, null, true);
@@ -376,6 +378,9 @@ public class MiroWriter
       MiroWidget result = null;
       if (!ignore.contains(node)) {
          result = connector.addWidget(widget, "Error adding "+node.getFormattedId(), false);
+         if (widget instanceof MiroSticker) {
+            connector.updateWidget(result, "Error updating "+node.getFormattedId(), false);
+         }
       }
       lastNode = Optional.of(node);
       return result;
