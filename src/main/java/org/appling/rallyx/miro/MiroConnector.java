@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MiroConnector
 {
@@ -172,6 +174,8 @@ public class MiroConnector
       return result;
    }
 
+   Pattern securityResultPattern = Pattern.compile(".+id=\"data\"[^>]+>\\s+([^<]+)<br>\\s+([^<]+)<br>\\s+([^\n]+).+", Pattern.DOTALL);
+
    /**
     * Check the httpResponse for errors.
     * @param httpResponse
@@ -187,7 +191,16 @@ public class MiroConnector
          try {
             errorResponse = gson.fromJson(resultString, ErrorResponse.class);
          } catch (JsonSyntaxException ex) {
-            if (resultString.contains("to hack us?")) {
+            if (resultString.contains("Potentially malicious content")) {
+               Matcher m = securityResultPattern.matcher(resultString);
+               if (m.matches()) {
+                  System.err.println("Info for Miro Security team:");
+                  System.out.println(m.group(1));
+                  System.out.println(m.group(2));
+                  System.out.println(m.group(3));
+               } else {
+                  System.err.println("Can't retrieve security context info");
+               }
               throw new IOException("Rally content triggered Miro's hack detection.  Skipping item: "+errorContextMessage);
             } else {
                throw new IOException("Unexpected content in Miro error response: "+errorContextMessage);
