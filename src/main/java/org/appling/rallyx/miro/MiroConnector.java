@@ -77,7 +77,14 @@ public class MiroConnector
        }
       HttpResponse httpResponse = executor.execute(request).returnResponse();
 
-      boolean retry = checkForError( httpResponse, widget.getText(), contextErrorMessage);
+      boolean retry = false;
+       try {
+          retry = checkForError(httpResponse, widget.getText(), contextErrorMessage);
+       } catch (IOException ex) {
+          if (ex.getMessage().startsWith("Rally content triggered Miro's hack detection")) {
+             System.out.println("Endpoint:"+request.toString());
+          }
+       }
       waitForLimitReset(httpResponse);
 
       if (retry) {
