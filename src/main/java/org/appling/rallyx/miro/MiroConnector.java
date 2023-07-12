@@ -83,6 +83,8 @@ public class MiroConnector
        } catch (IOException ex) {
           if (ex.getMessage().startsWith("Rally content triggered Miro's hack detection")) {
              System.out.println("Endpoint:"+request.toString());
+             System.out.println("Content:");
+             System.out.println(newContent);
           }
        }
       waitForLimitReset(httpResponse);
