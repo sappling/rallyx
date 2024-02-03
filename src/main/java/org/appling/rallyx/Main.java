@@ -85,18 +85,18 @@ public class Main {
         }
 
         Properties properties = getOptions(line);
-        proxy_url = properties.getProperty(PROP_PROXYURL);
-        proxy_user = properties.getProperty(PROP_PROXYUSER);
-        proxy_pass = properties.getProperty(PROP_PROXYPASS);
+        proxy_url = properties.getProperty(PROP_PROXYURL).trim();
+        proxy_user = properties.getProperty(PROP_PROXYUSER).trim();
+        proxy_pass = properties.getProperty(PROP_PROXYPASS).trim();
 
 
         if (properties.containsKey(PROP_TYPE)) {
-            outType = properties.getProperty(PROP_TYPE);
+            outType = properties.getProperty(PROP_TYPE).trim();
         }
 
         Optional<String> project = Optional.empty();
         if (properties.containsKey( PROP_PROJECT )) {
-            project = Optional.of(properties.getProperty( PROP_PROJECT ));
+            project = Optional.of(properties.getProperty( PROP_PROJECT ).trim());
         }
 
         boolean useProxy = (proxy_url != null);
@@ -106,7 +106,7 @@ public class Main {
 
         String outName = null;
         if (properties.containsKey(PROP_FILE)) {
-            outName = properties.getProperty(PROP_FILE);
+            outName = properties.getProperty(PROP_FILE).trim();
         }
 
 
@@ -142,11 +142,11 @@ public class Main {
                     issueWriter.write(outName);
                 } else if (outType.equalsIgnoreCase("miro")) {
                     if (properties.containsKey(PROP_MIRO_UPDATE_BOARD) && properties.containsKey(PROP_MIRO_UPDATE_FRAME)) {
-                        MiroUpdater updater = new MiroUpdater(stats, properties.getProperty( PROP_MIRO_TOKEN ),
-                              properties.getProperty( PROP_MIRO_UPDATE_BOARD),
-                              properties.getProperty( PROP_MIRO_UPDATE_FRAME ),
-                              properties.getProperty( PROP_MIRO_CARD_SHOW ),
-                              properties.getProperty( PROP_RALLY_OPTIONS) );
+                        MiroUpdater updater = new MiroUpdater(stats, properties.getProperty( PROP_MIRO_TOKEN ).trim(),
+                              properties.getProperty( PROP_MIRO_UPDATE_BOARD).trim(),
+                              properties.getProperty( PROP_MIRO_UPDATE_FRAME ).trim(),
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ).trim(),
+                              properties.getProperty( PROP_RALLY_OPTIONS).trim() );
                         if (proxy_url != null) {
                             updater.setProxy(proxy_url, proxy_user, proxy_pass);
                         }
@@ -154,10 +154,10 @@ public class Main {
 
 
                         MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
-                              properties.getProperty( PROP_MIRO_BOARD),
-                              properties.getProperty( PROP_MIRO_FRAME ),
-                              properties.getProperty( PROP_MIRO_CARD_SHOW ),
-                              properties.getProperty( PROP_RALLY_OPTIONS),
+                              properties.getProperty( PROP_MIRO_BOARD).trim(),
+                              properties.getProperty( PROP_MIRO_FRAME ).trim(),
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ).trim(),
+                              properties.getProperty( PROP_RALLY_OPTIONS).trim(),
                               updater.getUpdatedNodes());
                         if (proxy_url != null) {
                             cardWriter.setProxy(proxy_url, proxy_user, proxy_pass);
@@ -167,10 +167,10 @@ public class Main {
 
                     } else {
                         MiroWriter cardWriter = new MiroWriter(stats, properties.getProperty( PROP_MIRO_TOKEN ),
-                              properties.getProperty( PROP_MIRO_BOARD),
-                              properties.getProperty( PROP_MIRO_FRAME ),
-                              properties.getProperty( PROP_MIRO_CARD_SHOW ),
-                              properties.getProperty(PROP_RALLY_OPTIONS),
+                              properties.getProperty( PROP_MIRO_BOARD).trim(),
+                              properties.getProperty( PROP_MIRO_FRAME ).trim(),
+                              properties.getProperty( PROP_MIRO_CARD_SHOW ).trim(),
+                              properties.getProperty(PROP_RALLY_OPTIONS).trim(),
                               new HashSet<>());
                         if (proxy_url != null) {
                             cardWriter.setProxy(proxy_url, proxy_user, proxy_pass);
@@ -186,7 +186,7 @@ public class Main {
     }
 
     private static StoryStats getStoryStats(Properties properties, Optional<String> project, boolean useProxy) throws IOException, URISyntaxException {
-        String rally_key = properties.getProperty(PROP_APIKEY);
+        String rally_key = properties.getProperty(PROP_APIKEY).trim();
 
 
         if (rally_key == null) {
@@ -215,10 +215,10 @@ public class Main {
 
         String releaseName = "";
         if (properties.containsKey(PROP_RELEASE)) {
-            releaseName = properties.getProperty(PROP_RELEASE);
+            releaseName = properties.getProperty(PROP_RELEASE).trim();
             UserStoryFinder finder = new UserStoryFinder(restApi);
             //finder.setSkipInP(true);    //todo - use rally option
-            finder.setFindComplete(properties.getProperty(OPTION_INCOMPLETE, "true").equals("false"));
+            finder.setFindComplete(properties.getProperty(OPTION_INCOMPLETE, "true").trim().equals("false"));
             finder.setRelease(releaseName);
             finder.setProject( project );
 
@@ -229,10 +229,11 @@ public class Main {
         if (properties.containsKey(PROP_INITIATIVE)) {
             String[] initiativeNames = properties.getProperty(PROP_INITIATIVE).split(",");
             for (String initiativeID : initiativeNames) {
+                initiativeID = initiativeID.trim();
                 InitiativeNodeFinder walker = new InitiativeNodeFinder(restApi);
                 //walker.setSkipInP(true);    //todo - use rally option
-                walker.setFindComplete(properties.getProperty(OPTION_INCOMPLETE, "true").equals("false"));
-                walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE)));  // Todo - add an option for includeNodesOutOfProject
+                walker.setFindComplete(properties.getProperty(OPTION_INCOMPLETE, "true").trim().equals("false"));
+                walker.setProject( project, "miro".equals(properties.getProperty(PROP_TYPE).trim()));  // Todo - add an option for includeNodesOutOfProject
                 RallyNode initiativeTree = walker.getInitiativeTree(initiativeID);
                 initiatives.add(initiativeTree);
                 storiesUnderInitiativeList.addAll(walker.getStories());
@@ -260,7 +261,7 @@ public class Main {
 
         boolean hideBugHolder = false;
         if (properties.containsKey(PROP_RALLY_OPTIONS)) {
-            RallyOptions options = new RallyOptions(properties.getProperty(PROP_RALLY_OPTIONS));
+            RallyOptions options = new RallyOptions(properties.getProperty(PROP_RALLY_OPTIONS).trim());
             hideBugHolder = options.isHideBugHolder();
         }
             // statistics
@@ -290,8 +291,8 @@ public class Main {
                 System.exit(-1);
             }
 
-            String miroLink = propFromFile.getProperty( PROP_MIRO_LINK );
-            String miroUpdateLink = propFromFile.getProperty( PROP_MIRO_UPDATE_LINK );
+            String miroLink = propFromFile.getProperty( PROP_MIRO_LINK ).trim();
+            String miroUpdateLink = propFromFile.getProperty( PROP_MIRO_UPDATE_LINK ).trim();
             extractBoardAndFrame( prop, miroLink, miroUpdateLink );
         }
 
@@ -302,22 +303,22 @@ public class Main {
 
 
         if (line.hasOption(OPTION_INIT)) {
-            prop.setProperty(PROP_INITIATIVE, line.getOptionValue(OPTION_INIT));
+            prop.setProperty(PROP_INITIATIVE, line.getOptionValue(OPTION_INIT).trim());
         }
 
         if (line.hasOption(OPTION_RELEASE)) {
-            prop.setProperty(PROP_RELEASE, line.getOptionValue(OPTION_RELEASE));
+            prop.setProperty(PROP_RELEASE, line.getOptionValue(OPTION_RELEASE).trim());
         }
         if (line.hasOption(OPTION_TYPE)) {
-            prop.setProperty(PROP_TYPE, line.getOptionValue(OPTION_TYPE));
+            prop.setProperty(PROP_TYPE, line.getOptionValue(OPTION_TYPE).trim());
         }
 
         if (line.hasOption(OPTION_FILE)) {
-            prop.setProperty(PROP_FILE, line.getOptionValue(OPTION_FILE));
+            prop.setProperty(PROP_FILE, line.getOptionValue(OPTION_FILE).trim());
         }
 
         if (line.hasOption( OPTION_PROJECT )) {
-            prop.setProperty( PROP_PROJECT, line.getOptionValue(OPTION_PROJECT) );
+            prop.setProperty( PROP_PROJECT, line.getOptionValue(OPTION_PROJECT).trim() );
         }
 
         return prop;
@@ -354,7 +355,7 @@ public class Main {
     private static void setPropFromEnv(Properties prop, String propname) {
         String env = System.getenv(propname);
         if (env != null && env.length()>0) {
-            prop.setProperty(propname, env);
+            prop.setProperty(propname, env.trim());
         }
     }
 
