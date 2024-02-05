@@ -85,9 +85,9 @@ public class Main {
         }
 
         Properties properties = getOptions(line);
-        proxy_url = properties.getProperty(PROP_PROXYURL).trim();
-        proxy_user = properties.getProperty(PROP_PROXYUSER).trim();
-        proxy_pass = properties.getProperty(PROP_PROXYPASS).trim();
+        proxy_url = properties.getProperty(PROP_PROXYURL);
+        proxy_user = properties.getProperty(PROP_PROXYUSER);
+        proxy_pass = properties.getProperty(PROP_PROXYPASS);
 
 
         if (properties.containsKey(PROP_TYPE)) {
@@ -100,6 +100,15 @@ public class Main {
         }
 
         boolean useProxy = (proxy_url != null);
+        if (useProxy) {
+            proxy_url = proxy_url.trim();
+            if (proxy_user != null) {
+                proxy_user = proxy_user.trim();
+            }
+            if (proxy_pass != null) {
+                proxy_pass = proxy_pass.trim();
+            }
+        }
         if (line.hasOption(OPTION_NOPROXY)) {
             useProxy = false;
         }
