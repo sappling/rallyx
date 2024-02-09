@@ -11,7 +11,7 @@ import java.util.Optional;
  * Created by sappling on 7/19/2017.
  */
 public class RallyQueryFactory {
-    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children", "Defects", "Feature", "ObjectID", "DragAndDropRank", "Project", "TaskEstimateTotal", "PlanEstimate", "State", "ScheduleState", "Iteration", "StartDate", "EndDate", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories","Tags");
+    private static final Fetch standardFetch = new Fetch("FormattedID", "Name", "Children", "Defects", "Feature", "ObjectID", "DragAndDropRank", "PercentDoneByStoryCount","Project", "TaskEstimateTotal", "PlanEstimate", "State", "ScheduleState", "Iteration", "StartDate", "EndDate", "Description", "DirectChildrenCount", "Release", "_ref", "_type", "UserStories","Tags");
 
     public static QueryRequest findInitiative(String initiativeID) {
         QueryRequest request = new QueryRequest("PortfolioItem/Initiative");

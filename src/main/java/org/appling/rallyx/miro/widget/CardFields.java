@@ -1,9 +1,6 @@
 package org.appling.rallyx.miro.widget;
 
-import org.appling.rallyx.rally.Iteration;
-import org.appling.rallyx.rally.Project;
-import org.appling.rallyx.rally.RallyNode;
-import org.appling.rallyx.rally.Tags;
+import org.appling.rallyx.rally.*;
 
 public class CardFields
 {
@@ -23,17 +20,18 @@ public class CardFields
    private boolean showMMF = false;
    private boolean showTeam = false;
    private boolean showNotInRelease = false;
+   private boolean showNotInAnyRelease = false;
    private boolean showUnassigned = false;
    private boolean compactMMF = false;
    private boolean showIPPrep = false;
 
 
 
-   public CardFields(String fieldsToShow) {
-      setCardOptions( fieldsToShow );
+   public CardFields(String fieldsToShow, RallyOptions rallyOptions) {
+      setCardOptions( fieldsToShow, rallyOptions );
    }
 
-   private void setCardOptions( String fieldsToShow )
+   private void setCardOptions( String fieldsToShow, RallyOptions rallyOptions )
    {
       if (fieldsToShow != null) {
          String[] options = fieldsToShow.split( ", *" );
@@ -68,6 +66,7 @@ public class CardFields
             }
          }
       }
+      showNotInAnyRelease = rallyOptions.isShowNotInAnyRelease();
    }
 
    public void addFieldsToCard( MiroCard card, RallyNode node )
@@ -119,12 +118,20 @@ public class CardFields
 
       if (node.isUserStory() && node.hasChildren()) { // epic
          card.addCustomField(new CustomField("Epic", null));
-      } else if (showNotInRelease)  // epics can't have a release assigned
-      {
-         if ( !card.isInRelease() )
+      } else  {         // epics can't have a release assigned
+         if (showNotInRelease)
          {
-            card.addCustomField( new CustomField( "NIR", ""));
-            card.style = new MiroCardStyle( "#E00000" );
+            if ( !card.isInRelease() )
+            {
+               card.addCustomField( new CustomField( "NIR", ""));
+               card.style = new MiroCardStyle( "#E00000" );
+            }
+         }
+         if (showNotInAnyRelease) {
+            if (node.getRelease().isEmpty()) {
+               card.addCustomField( new CustomField( "No Release", null, "#F06060"));
+               card.style = new MiroCardStyle( "#E00000" );
+            }
          }
       }
       if (showUnassigned && (node.getIteration()==null) &&  // unassigned
@@ -173,6 +180,8 @@ public class CardFields
          } else if (team.startsWith("Chame")) {
             return "#FFFFFF"; //return "#ea94bb";
          } else if (team.startsWith("Koa")) {
+            return "#FFFFFF"; //return "#f5f6f8";
+         } else if (team.startsWith("Meer")) {
             return "#FFFFFF"; //return "#f5f6f8";
          } else if (team.startsWith("Firmware")) {
             return "#E0E0FF";

@@ -27,6 +27,8 @@ public class RallyNode {
    private static final String FIELD_STATE = "State";    // for Defects
    private static final String FIELD_SSTATE = "ScheduleState";
    private static final String FIELD_OBJID = "ObjectID";
+
+   private static final String FIELD_PERCENT_DONE = "PercentDoneByStoryCount";
    private static final String FIELD_CHILDCOUNT = "DirectChildrenCount";
    private static final String FIELD_RELEASE = "Release";
    private static final String FIELD_RANK = "DragAndDropRank";
@@ -127,6 +129,10 @@ public class RallyNode {
       return getStringField(FIELD_FMT_ID);
    }
 
+   public float getPercentDone() {
+      return getNumericField(FIELD_PERCENT_DONE);
+   }
+
    @NotNull
    public String getName() {
       return getStringField(FIELD_NAME);
@@ -210,7 +216,7 @@ public class RallyNode {
 
    public boolean hasSelfOrDescendentsInReleaseAndProject(String release) {
       boolean result = false;
-      if (children.isEmpty() && defects.isEmpty()) {
+      if (children.isEmpty() && defects.isEmpty()) {     // is a leaf node
          if (release.equalsIgnoreCase(getRelease()) && !isOutOfProject()) {
             result = true;
          }

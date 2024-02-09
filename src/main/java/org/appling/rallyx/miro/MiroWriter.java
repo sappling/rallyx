@@ -37,8 +37,8 @@ public class MiroWriter
       this.ignore = ignore;
       this.targetId = targetId;
       //connector.setTargetFrame( frameId );
-      cardFields = new CardFields( fieldsToShow );
       rallyOptions = new RallyOptions(rallyOptionString);
+      cardFields = new CardFields( fieldsToShow, rallyOptions );
       this.stats = stats;
       mmfNodes = stats.getNodesWithTag( Tags.MMF );
       bugHolderNodes = stats.getNodesWithTag(Tags.BUGHOLDER);
@@ -152,6 +152,7 @@ public class MiroWriter
          }
       }
 
+      /*
       if (rallyOptions.isShowNotInAnyRelease() && (!stats.getStoriesInNoRelease().isEmpty() || !stats.getDefectsInNoRelease().isEmpty())) {
          MiroSticker widget = new MiroSticker("Not In Any Release");
 
@@ -170,6 +171,7 @@ public class MiroWriter
             handleNode(node, null, true);
          }
       }
+       */
 
    }
 
@@ -236,20 +238,29 @@ public class MiroWriter
     */
    private boolean shouldAddNode(RallyNode node, boolean ignoreRelease) {
       boolean result = true;
+      //System.out.printf("%s: %b, %b, %f%n",node.getFormattedId(), node.hasDescendentsInProject(), !node.getDefects().isEmpty(), node.getPercentDone());
       if ( !ignoreRelease &&
            stats.getReleaseSpecified() &&
            !cardFields.isShowNotInRelease() &&
-           !node.hasSelfOrDescendentsInReleaseAndProject(stats.getReleaseName())) {
+           !(node.hasSelfOrDescendentsInReleaseAndProject(stats.getReleaseName()) ) &&
+           !(rallyOptions.isShowNotInAnyRelease() && node.hasSelfOrDescendentsInReleaseAndProject("")) ){
          result = false; // if this is a user story not in the release and we aren't highlighting missing, then don't add it
       }
-      /*
-      else if (node.isOutOfProject()) {
-         if (!node.hasDescendentsInProject() &&
-         !(node.getDefects().size() > 0)) {
+
+      else if (node.isOutOfProject()) {            // if node is not in my team's project
+         if (!node.hasDescendentsInProject() &&    // hide it if it has no descendents in my project
+         (node.getDefects().size() == 0)) {        // and it has no defects
             result = false;
          }
       }
-       */
+
+      // need to do this on the rally side, or at least honor the incomplete option, but doing this here for now since PIP is soon
+      if ((node.getPercentDone() == 1.0) && node.hasChildren()){
+         result = false;
+      }
+
+
+
       return result;
    }
 

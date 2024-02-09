@@ -301,7 +301,8 @@ public class Main {
             }
 
             String miroLink = propFromFile.getProperty( PROP_MIRO_LINK ).trim();
-            String miroUpdateLink = propFromFile.getProperty( PROP_MIRO_UPDATE_LINK ).trim();
+            String miroUpdateLink = propFromFile.getProperty( PROP_MIRO_UPDATE_LINK );
+            if (miroUpdateLink != null) { miroUpdateLink = miroUpdateLink.trim(); }
             extractBoardAndFrame( prop, miroLink, miroUpdateLink );
         }
 
