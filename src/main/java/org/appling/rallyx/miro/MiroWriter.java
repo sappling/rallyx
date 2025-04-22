@@ -68,7 +68,7 @@ public class MiroWriter
    {
       if (target == null)
       {
-         target = connector.getWidget( targetId, false );
+         target = connector.getFrameV2( targetId, false );
          if ( "frame".equalsIgnoreCase( target.getType() ) )
          {
             //connector.setTargetFrame( targetId );

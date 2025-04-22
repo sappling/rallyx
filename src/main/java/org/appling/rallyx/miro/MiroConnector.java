@@ -8,6 +8,7 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.EntityUtils;
+import org.appling.rallyx.miro.widget.MiroFrame;
 import org.appling.rallyx.miro.widget.MiroWidget;
 import org.jetbrains.annotations.Nullable;
 
@@ -160,6 +161,50 @@ public class MiroConnector
 
       MiroWidget widget = gson.fromJson( resultString, MiroWidget.class );
       return (W) gson.fromJson( resultString, widget.getClassOfType() );
+   }
+
+/*
+Gets a frame widget using the V2 API.
+In 2025, Miro introduced a bug into the V1 REST API where the y value of all objects had the x value in it.
+The V2 version worked, though.  We still couldn't switch everything over to V2 because it didn't support
+custom fields in cards yet, so this hack let us at least determine the coordinates of our container.
+ */
+   public MiroFrame getFrameV2(String id, boolean inRetry) throws IOException
+   {
+      Request request = Request.Get( "https://api.miro.com/v2/boards/" + boardId + "/widgets/"+id )
+              .addHeader( "Authorization", "Bearer " + authToken )
+              .addHeader( "Accept", "application/json, text/plain, */*" );
+      if (proxyUrl != null) {
+         request = request.viaProxy(proxyUrl);
+      }
+
+      HttpResponse httpResponse =executor.execute(request).returnResponse();
+
+      boolean retry = checkForError( httpResponse, "Unknown" , "Error getting widget with id "+id);
+      waitForLimitReset(httpResponse);
+
+      if (retry) {
+         rateLimitRetryWait(inRetry);
+         return getWidget(id, true);
+      }
+      String resultString = EntityUtils.toString( httpResponse.getEntity() );
+      //System.out.println(resultString);
+
+      MiroFrame widget = new MiroFrame();
+
+
+      JsonParser parser = new JsonParser();
+      JsonElement rootElement = parser.parse(resultString);
+      JsonObject rootObject = rootElement.getAsJsonObject();
+      JsonObject position = rootObject.getAsJsonObject("position");
+      widget.setX( position.get("x").getAsDouble());
+      widget.setY( position.get("y").getAsDouble());
+
+      JsonObject geometry = rootObject.getAsJsonObject("geometry");
+      widget.height = geometry.get("height").getAsDouble();
+      widget.width = geometry.get("width").getAsDouble();
+
+      return widget;
    }
 
    public <W extends MiroWidget > List<W> getFrameContent(String id, boolean inRetry) throws IOException {
