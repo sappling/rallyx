@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public class FoundWidget {
    private final MiroWidget miroWidget;
-   private final static Pattern WIDGET_TITLES = Pattern.compile("<a href=\"(.+)\">(.+)</a> (.+)");
+   private final static Pattern WIDGET_TITLES = Pattern.compile(".*<a href=\"(.+)\">(.+)</a> (.+)");
    private final String rallyId;
    private final String rallyLink;
    private final String title;
